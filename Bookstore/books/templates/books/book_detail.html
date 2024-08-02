@@ -1,15 +1,151 @@
-{% extends 'books/base_template.html' %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.1.3/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <title>{{ book.title }} - Book Detail</title>
+    <style>
+        body {
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 60px;
+        }
+        .book-image {
+            max-width: 300px;
+            margin: 20px 0;
+        }
+        .review-section {
+            margin-top: 30px;
+        }
+        .stars {
+            color: orange;
+        }
+        .unchecked {
+            color: #ccc;
+        }
+        .fixed-top {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1030;
+            background-color: #343a40;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+        }
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: #343a40;
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+            z-index: 1020;
+            height: 60px;
+        }
+        .content {
+            margin-top: 80px;
+            padding-bottom: 70px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'book_list' %}" style="color: #FF5733; font-weight: bold; font-size: 1.5rem;">Bookstore</a>
+        </div>
+    </nav>
 
-{% block content %}
-<h1>{{ book.title }}</h1>
-<p>Price: {{ book.price }}</p>
-<p>Quantity: {{ book.quantity }}</p>
-<img src="{{ book.book_cover.url }}" alt="{{ book.title }}">
-<p>{{ book.description }}</p>
-<a href="{% url 'book_update' book.pk %}">Edit</a>
-<form action="{% url 'book_delete' book.pk %}" method="post">
-    {% csrf_token %}
-    <button type="submit">Delete</button>
-</form>
-<a href="{% url 'book_list' %}">Back to List</a>
-{% endblock %}
+    <div class="content">
+        <h2>{{ book.title }}</h2>
+        <p><strong>Author:</strong> {{ book.author }}</p>
+        <p><strong>Genre:</strong> {{ book.genre }}</p>
+        <p><strong>Price:</strong> ${{ book.price }}</p>
+        <p><strong>Description:</strong> {{ book.description }}</p>
+        <p><strong>Quantity:</strong> {{ book.quantity }}</p>
+        {% if book.cover_image %}
+            <img src="{{ book.cover_image.url }}" alt="{{ book.title }} Cover" class="book-image">
+        {% endif %}
+
+        <div class="review-section">
+            <h3>Submit a Review</h3>
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="rating" class="form-label">Rating:</label>
+                    <div id="rating" class="stars">
+                        <span class="fa fa-star unchecked" data-value="1" onclick="setRating(1)"></span>
+                        <span class="fa fa-star unchecked" data-value="2" onclick="setRating(2)"></span>
+                        <span class="fa fa-star unchecked" data-value="3" onclick="setRating(3)"></span>
+                        <span class="fa fa-star unchecked" data-value="4" onclick="setRating(4)"></span>
+                        <span class="fa fa-star unchecked" data-value="5" onclick="setRating(5)"></span>
+                    </div>
+                    <input type="hidden" name="rating" id="rating-input" value="" />
+                </div>
+                <div class="mb-3">
+                    <label for="comment" class="form-label">Your Review:</label>
+                    <textarea name="comment" id="comment" class="form-control" placeholder="Write your review here" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary mt-2">Submit Review</button>
+            </form>
+        </div>
+
+        <h3>User Reviews</h3>
+        {% if reviews %}
+            <div class="reviews">
+                {% for review in reviews %}
+                    <div class="review">
+                        <strong>{{ review.user.username }}</strong>
+                        <div class="stars">
+                            {% for i in "12345" %}
+                                {% if i|add:0 <= review.rating %}
+                                    <span class="fa fa-star checked"></span>
+                                {% else %}
+                                    <span class="fa fa-star unchecked"></span>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        <p>{{ review.comment }}</p>
+                    </div>
+                    <hr>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>No reviews yet.</p>
+        {% endif %}
+    </div>
+
+    <footer class="footer">
+        <p>&copy; 2024 Bookstore. All rights reserved.</p>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.1.3/js/bootstrap.min.js"></script>
+
+    <script>
+        // Function to set the rating and highlight stars
+        function setRating(rating) {
+            const stars = document.querySelectorAll('.fa-star');
+            stars.forEach((star) => {
+                const starValue = star.getAttribute('data-value');
+                if (starValue <= rating) {
+                    star.classList.remove('unchecked');
+                    star.classList.add('checked');
+                } else {
+                    star.classList.remove('checked');
+                    star.classList.add('unchecked');
+                }
+            });
+            // Set the hidden input value for the selected rating
+            document.getElementById('rating-input').value = rating;
+        }
+    </script>
+</body>
+</html>
