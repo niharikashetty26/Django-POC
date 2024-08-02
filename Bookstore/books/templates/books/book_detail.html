@@ -1,0 +1,15 @@
+{% extends 'books/base_template.html' %}
+
+{% block content %}
+<h1>{{ book.title }}</h1>
+<p>Price: {{ book.price }}</p>
+<p>Quantity: {{ book.quantity }}</p>
+<img src="{{ book.book_cover.url }}" alt="{{ book.title }}">
+<p>{{ book.description }}</p>
+<a href="{% url 'book_update' book.pk %}">Edit</a>
+<form action="{% url 'book_delete' book.pk %}" method="post">
+    {% csrf_token %}
+    <button type="submit">Delete</button>
+</form>
+<a href="{% url 'book_list' %}">Back to List</a>
+{% endblock %}
