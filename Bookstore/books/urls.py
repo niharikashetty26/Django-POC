@@ -1,18 +1,35 @@
 from django.urls import path
-from . import views
-
-from django.contrib.auth.views import LoginView, LogoutView
+from django.contrib.auth import views as auth_views
+from .views import (
+    book_list,
+    book_detail,
+    book_create,
+    book_update,
+    book_delete,
+    add_book,
+    register,
+    user_logout,
+    add_to_cart,
+    view_cart,
+    remove_from_cart,
+    set_language,
+    user_profile
+)
 
 urlpatterns = [
-    path('', views.book_list, name='book_list'),
-    path('book/<int:pk>/', views.book_detail, name='book_detail'),
-    path('book/new/', views.book_create, name='book_create'),
-    path('book/<int:pk>/edit/', views.book_update, name='book_update'),
-    path('book/<int:pk>/delete/', views.book_delete, name='book_delete'),
-    path('add/', views.add_book, name='add_book'),
-    path('login/', views.user_login, name='login'),
-    path('add-book/', views.add_book, name='add_book'),
-    path('logout/', LogoutView.as_view(), name='logout'),
-
+    path('', book_list, name='book_list'),
+    path('book/<int:pk>/', book_detail, name='book_detail'),
+    path('book/create/', book_create, name='book_create'),
+    path('book/delete/<int:pk>/', book_delete, name='book_delete'),
+    path('add-book/', add_book, name='add_book'),
+    path('register/', register, name='register'),
+    path('accounts/login/', auth_views.LoginView.as_view(template_name='books/login.html'), name='login'),
+    path('logout/', user_logout, name='logout'),
+    path('add-to-cart/<int:book_id>/', add_to_cart, name='add_to_cart'),
+    path('cart/', view_cart, name='view_cart'),
+    path('remove-from-cart/<int:cart_item_id>/', remove_from_cart, name='remove_from_cart'),
+    path('set-language/', set_language, name='set_language'),
+    path('books/<int:pk>/edit/', book_update, name='book_update'),
+    path('accounts/profile/', user_profile, name='user_profile'),
 
 ]

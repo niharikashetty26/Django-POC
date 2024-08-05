@@ -1,0 +1,45 @@
+{% extends 'books/base_template.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "My Cart" %}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center">{% trans "My Cart" %}</h1>
+    <table class="table table-bordered table-hover">
+        <thead class="thead-dark">
+            <tr>
+                <th>{% trans "Book" %}</th>
+                <th>{% trans "Quantity" %}</th>
+                <th>{% trans "Price" %}</th>
+                <th>{% trans "Total" %}</th>
+                <th>{% trans "Actions" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in cart_items %}
+            <tr>
+                <td>{{ item.book.title }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>${{ item.price|floatformat:2 }}</td>
+                <td>${{ item.total_price|floatformat:2 }}</td>
+                <td>
+                    <form method="post" action="{% url 'remove_from_cart' item.cart_item_id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger btn-sm">{% trans "Remove" %}</button>
+                    </form>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="text-center">{% trans "Your cart is empty." %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="text-right">
+        <h3>{% trans "Total" %}: ${{ cart_total|floatformat:2 }}</h3>
+        <a href="{% url 'book_list' %}" class="btn btn-primary">{% trans "Continue Shopping" %}</a>
+    </div>
+</div>
+{% endblock %}

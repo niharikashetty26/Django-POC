@@ -1,29 +1,35 @@
+{% load i18n %}
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.1.3/css/bootstrap.min.css">
-    <title>Login - Bookstore</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">  <!-- Link to your CSS file -->
+    <title>{% trans "Login" %}</title>
 </head>
 <body>
     <div class="container">
-        <h2>Login</h2>
-        {% if error %}
-            <div class="alert alert-danger">{{ error }}</div>
-        {% endif %}
-        <form method="post">
+        <h2>{% trans "Login" %}</h2>
+
+        <form method="post" action="{% url 'login' %}">
             {% csrf_token %}
-            <div class="mb-3">
-                <label for="username" class="form-label">Username</label>
-                <input type="text" name="username" class="form-control" required>
+            <div class="form-group">
+                <label for="username">{% trans "Username" %}</label>
+                <input type="text" name="username" id="username" required>
             </div>
-            <div class="mb-3">
-                <label for="password" class="form-label">Password</label>
-                <input type="password" name="password" class="form-control" required>
+
+            <div class="form-group">
+                <label for="password">{% trans "Password" %}</label>
+                <input type="password" name="password" id="password" required>
             </div>
-            <button type="submit" class="btn btn-primary">Login</button>
+
+            <button type="submit">{% trans "Submit" %}</button>
         </form>
+        <p>
+            <a href="{% url 'password_reset' %}">{% trans "Forgot your password?" %}</a>
+        </p>
     </div>
 </body>
 </html>
