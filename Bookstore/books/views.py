@@ -55,7 +55,6 @@ def book_list(request):
     cart_count = cart_items.count()
     cart_total = cart_items.aggregate(total=Sum('book__price'))['total'] or 0
 
-
     user_role = request.user.userprofile.role if hasattr(request.user, 'userprofile') else None
 
     return render(request, 'books/book_list.html', {

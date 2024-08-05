@@ -54,6 +54,7 @@ MIDDLEWARE = [
     'django.middleware.locale.LocaleMiddleware',
 
 
+
 ]
 
 ROOT_URLCONF = 'Bookstore.urls'
