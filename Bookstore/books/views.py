@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.http import HttpResponseBadRequest
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Book, Cart
+from .models import Book, Cart, Order
 from django.contrib import messages
 from .forms import BookForm
 from django.contrib.auth import authenticate, login, logout
@@ -12,6 +12,8 @@ from django.utils.translation import gettext as _
 from django.utils import translation
 from django.db.models import Q, Count, Sum
 from django.urls import reverse
+from django.contrib.admin.views.decorators import staff_member_required
+
 
 
 def is_admin(user):
@@ -123,13 +125,21 @@ def add_book(request):
         form = BookForm()
     return render(request, 'books/add_book.html', {'form': form})
 
+@login_required
+@user_passes_test(is_admin)  # Ensure the user is an admin
+def delete_book(request, book_id):
+    book = get_object_or_404(Book, id=book_id)
+    book.delete()  # Delete the book
+    return redirect('book_list')
 
 def register(request):
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            UserProfile.objects.create(user=user, role='customer')
+            # Check if the UserProfile already exists for this user
+            if not UserProfile.objects.filter(user=user).exists():
+                UserProfile.objects.create(user=user, role='customer')
             messages.success(request, _("Registration successful! You can now log in."))
             return redirect('login')
         else:
@@ -139,7 +149,6 @@ def register(request):
         form = UserCreationForm()
 
     return render(request, 'books/register.html', {'form': form})
-
 def user_login(request):
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -165,6 +174,33 @@ def user_logout(request):
     return redirect(reverse('login'))
 
 
+
+@login_required
+def place_order(request):
+    if request.method == 'POST':
+        cart_items = Cart.objects.filter(user=request.user)
+
+        # Create orders for each item in the cart
+        for item in cart_items:
+            order = Order.objects.create(
+                user=request.user,
+                book=item.book,
+                quantity=item.quantity
+            )
+
+            # Reduce the book quantity in stock
+            item.book.quantity -= item.quantity
+            item.book.save()
+
+        # Optionally clear the cart after placing the order
+        cart_items.delete()
+
+        return redirect('order_success')  # Redirect to a success page
+
+    return render(request, 'books/place_order.html')
+
+def order_success(request):
+    return render(request, 'books/order_success.html')
 @login_required
 def add_to_cart(request, book_id):
     book = get_object_or_404(Book, id=book_id)
@@ -211,9 +247,45 @@ def remove_from_cart(request, cart_item_id):
     messages.success(request, _("Book removed from cart successfully."))
     return redirect('view_cart')
 
-
+@staff_member_required
+def view_orders(request):
+    orders = Order.objects.all().select_related('user', 'book')
+    return render(request, 'books/view_orders.html', {'orders': orders})
 def set_language(request):
     language = request.GET.get('language', 'en')
     translation.activate(language)
     request.session['django_language'] = language
     return redirect(request.META.get('HTTP_REFERER', '/'))
+
+
+
+# @login_required
+# @user_passes_test(is_admin)
+# def admin_dashboard(request):
+#     users = UserProfile.objects.filter(role='customer')  # Fetch all customers
+#     admins = UserProfile.objects.filter(role='admin')  # Fetch all admins
+#     books = Book.objects.all()  # Fetch all books
+#     orders = Cart.objects.all()  # Fetch all orders
+#
+#     return render(request, 'books/admin_dashboard.html', {
+#         'users': users,
+#         'admins': admins,
+#         'books': books,
+#         'orders': orders,
+#     })
+
+
+@login_required
+def admin_dashboard(request):
+    users = UserProfile.objects.filter(role='customer')  # Get all customers
+    admins = UserProfile.objects.filter(role='admin')     # Get all admins
+    books = Book.objects.all()                             # Get all books
+    orders = Order.objects.select_related('user', 'book').all()  # Get all orders with related user and book
+
+    return render(request, 'books/admin_dashboard.html', {
+        'users': users,
+        'admins': admins,
+        'books': books,
+        'orders': orders,
+    })
+

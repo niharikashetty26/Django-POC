@@ -37,3 +37,16 @@ class Cart(models.Model):
     @property
     def total_price(self):
         return self.book.price * self.quantity
+
+class Order(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    book = models.ForeignKey(Book, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+    order_date = models.DateTimeField(auto_now_add=True)
+
+    @property
+    def total_price(self):
+        return self.book.price * self.quantity
+
+    def __str__(self):
+        return f'Order by {self.user.username} for {self.book.title}'

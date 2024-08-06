@@ -13,7 +13,12 @@ from .views import (
     view_cart,
     remove_from_cart,
     set_language,
-    user_profile
+    user_profile,
+    delete_book,
+    admin_dashboard,
+    place_order,
+    order_success,
+    view_orders,
 )
 
 urlpatterns = [
@@ -31,5 +36,10 @@ urlpatterns = [
     path('set-language/', set_language, name='set_language'),
     path('books/<int:pk>/edit/', book_update, name='book_update'),
     path('accounts/profile/', user_profile, name='user_profile'),
+    path('admin/dashboard/', admin_dashboard, name='admin_dashboard'),
+    path('delete-book/<int:book_id>/', delete_book, name='delete_book'),
+    path('order/', place_order, name='place_order'),
+    path('order/success/', order_success, name='order_success'),
+    path('admin/orders/', view_orders, name='view_orders'),
 
 ]

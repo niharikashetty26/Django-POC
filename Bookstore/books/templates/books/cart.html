@@ -39,6 +39,10 @@
     </table>
     <div class="text-right">
         <h3>{% trans "Total" %}: ${{ cart_total|floatformat:2 }}</h3>
+        <form method="post" action="{% url 'place_order' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-success">{% trans "Place Order" %}</button>
+        </form>
         <a href="{% url 'book_list' %}" class="btn btn-primary">{% trans "Continue Shopping" %}</a>
     </div>
 </div>

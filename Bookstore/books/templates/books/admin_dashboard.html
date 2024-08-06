@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <style>
+        #customers {
+            font-family: Arial, Helvetica, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        #customers td, #customers th {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+
+        #customers tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        #customers tr:hover {
+            background-color: #ddd;
+        }
+
+        #customers th {
+            padding-top: 12px;
+            padding-bottom: 12px;
+            text-align: left;
+            background-color: #04AA6D;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Admin Dashboard</h1>
+
+<h2>Users</h2>
+<table id="customers">
+    <tr>
+        <th>Username</th>
+        <th>Joined Date</th>
+    </tr>
+    {% for user in users %}
+        <tr>
+            <td>{{ user.user.username }}</td>
+            <td>{{ user.user.date_joined }}</td>
+        </tr>
+    {% empty %}
+        <tr>
+            <td colspan="2">No users found.</td>
+        </tr>
+    {% endfor %}
+</table>
+
+<h2>Admins</h2>
+<table id="customers">
+    <tr>
+        <th>Admin Username</th>
+        <th>Role</th>
+    </tr>
+    {% for admin in admins %}
+        <tr>
+            <td>{{ admin.user.username }}</td>
+            <td>{{ admin.role }}</td>
+        </tr>
+    {% empty %}
+        <tr>
+            <td colspan="2">No admins found.</td>
+        </tr>
+    {% endfor %}
+</table>
+
+<h2>Total Books</h2>
+<table id="customers">
+    <tr>
+        <th>Title</th>
+        <th>Author</th>
+        <th>Price</th>
+        <th>Quantity</th>
+    </tr>
+    {% for book in books %}
+        <tr>
+            <td>{{ book.title }}</td>
+            <td>{{ book.author }}</td>
+            <td>${{ book.price }}</td>
+            <td>{{ book.quantity }}</td>
+        </tr>
+    {% empty %}
+        <tr>
+            <td colspan="4">No books found.</td>
+        </tr>
+    {% endfor %}
+</table>
+
+<h2>Orders</h2>
+<table id="customers">
+    <tr>
+        <th>Username</th>
+        <th>Book Title</th>
+        <th>Quantity</th>
+    </tr>
+    {% for order in orders %}
+        <tr>
+            <td>{{ order.user.username }}</td>
+            <td>{{ order.book.title }}</td>
+            <td>{{ order.quantity }}</td>
+        </tr>
+    {% empty %}
+        <tr>
+            <td colspan="3">No orders found.</td>
+        </tr>
+    {% endfor %}
+</table>
+
+</body>
+</html>

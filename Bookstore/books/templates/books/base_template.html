@@ -56,9 +56,22 @@
                         <i class="fas fa-shopping-cart"></i> Cart <span class="badge bg-primary">{{ cart_count }}</span>
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link text-white" href="{% url 'logout' %}">Logout</a>
-                </li>
+                {% if request.user.is_authenticated %}
+                    {% if request.user.is_superuser or request.user.userprofile.role == 'admin' %}
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="{% url 'admin_dashboard' %}">
+                                <i class="fas fa-receipt"></i> View Orders
+                            </a>
+                        </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="{% url 'logout' %}">Logout</a>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="{% url 'login' %}">Login</a>
+                    </li>
+                {% endif %}
             </ul>
         </div>
     </div>
