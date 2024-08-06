@@ -127,26 +127,24 @@ def add_book(request):
 def register(request):
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
-        role = request.POST.get('role')
-
         if form.is_valid():
             user = form.save()
-            UserProfile.objects.create(user=user, role=role)
+            UserProfile.objects.create(user=user, role='customer')
             messages.success(request, _("Registration successful! You can now log in."))
             return redirect('login')
         else:
             messages.error(request, _("Please correct the errors below."))
+            print(form.errors)  # Print form errors to console for debugging
     else:
         form = UserCreationForm()
 
     return render(request, 'books/register.html', {'form': form})
 
-
 def user_login(request):
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
-        language = request.POST.get('language', 'en')  # Get language from the form
+        language = request.POST.get('language', 'en')
 
         user = authenticate(request, username=username, password=password)
         if user is not None:
@@ -158,7 +156,7 @@ def user_login(request):
         else:
             messages.error(request, _("Invalid username or password."))
 
-    return render(request, 'books/book_list.html')
+    return render(request, 'books/login.html')
 
 
 def user_logout(request):
