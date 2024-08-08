@@ -75,7 +75,6 @@
     <img src="{{ book.cover_image.url }}" alt="{{ book.title }} Cover" class="book-image">
     {% endif %}
 
-
     <div class="review-section">
         <h3>Submit a Review</h3>
         <form method="post">
@@ -123,7 +122,6 @@
     {% else %}
     <p>No reviews yet.</p>
     {% endif %}
-
 
     {% if user.is_authenticated %}
     {% if user.is_superuser or user.userprofile.role == 'admin' %}

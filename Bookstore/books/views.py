@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.http import HttpResponseBadRequest
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Book, Cart, Order
+from .models import Book, Cart, Order, Review
 from django.contrib import messages
 from .forms import BookForm
 from django.contrib.auth import authenticate, login, logout
@@ -10,7 +10,7 @@ from .models import UserProfile
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.utils.translation import gettext as _
 from django.utils import translation
-from django.db.models import Q, Count, Sum
+from django.db.models import Q, Count, Sum, Avg
 from django.urls import reverse
 from django.contrib.postgres.aggregates import ArrayAgg
 from decimal import Decimal
@@ -69,14 +69,29 @@ def book_list(request):
     })
 
 
+@login_required
 def book_detail(request, pk):
     book = get_object_or_404(Book, pk=pk)
+    reviews = Review.objects.filter(book=book).order_by('-created_at')
+
+    if request.method == 'POST':
+        rating = request.POST.get('rating')
+        comment = request.POST.get('comment')
+
+        if rating and comment:
+            Review.objects.create(
+                book=book,
+                user=request.user,
+                rating=rating,
+                comment=comment
+            )
+            return redirect('book_detail', pk=pk)
+
     context = {
         'book': book,
+        'reviews': reviews,
     }
     return render(request, 'books/book_detail.html', context)
-
-
 def book_create(request):
     if request.method == 'POST':
         form = BookForm(request.POST, request.FILES)
@@ -294,21 +309,37 @@ def set_language(request):
     return redirect(request.META.get('HTTP_REFERER', '/'))
 
 
+
 @login_required
 def admin_dashboard(request):
-    users = UserProfile.objects.filter(role='customer')  # Get all customers
-    admins = UserProfile.objects.filter(role='admin')     # Get all admins
-    books = Book.objects.all()                             # Get all books
-    orders = Order.objects.select_related('user', 'book').all()  # Get all orders with related user and book
+    orders = Order.objects.all()
+    books = Book.objects.all()
+    users = UserProfile.objects.filter(role='customer')
+    admins = UserProfile.objects.filter(role='admin')
 
-    return render(request, 'books/admin_dashboard.html', {
+    # Calculate average ratings for each book
+    book_ratings = {}
+    for book in books:
+        reviews = Review.objects.filter(book=book)
+        if reviews.exists():
+            avg_rating = reviews.aggregate(Avg('rating'))['rating__avg']
+            book_ratings[book.title] = avg_rating
+
+    # Prepare data for Chart.js
+    ratings_data = {
+        'labels': list(book_ratings.keys()),
+        'data': list(book_ratings.values()),
+    }
+
+    context = {
+        'orders': orders,
+        'books': books,
         'users': users,
         'admins': admins,
-        'books': books,
-        'orders': orders,
-    })
+        'ratings_data': ratings_data,
+    }
 
-
+    return render(request, 'books/admin_dashboard.html', context)
 def order_history_view(request):
     # Fetch all orders
     orders = Order.objects.select_related('user', 'book').all()
