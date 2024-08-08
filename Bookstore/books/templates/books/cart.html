@@ -1,49 +1,82 @@
-{% extends 'books/base_template.html' %}
-{% load i18n %}
-
-{% block title %}{% trans "My Cart" %}{% endblock %}
-
-{% block content %}
-<div class="container mt-5">
-    <h1 class="text-center">{% trans "My Cart" %}</h1>
-    <table class="table table-bordered table-hover">
-        <thead class="thead-dark">
-        <tr>
-            <th>{% trans "Book" %}</th>
-            <th>{% trans "Quantity" %}</th>
-            <th>{% trans "Price" %}</th>
-            <th>{% trans "Total" %}</th>
-            <th>{% trans "Actions" %}</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for item in cart_items %}
-        <tr>
-            <td>{{ item.book.title }}</td>
-            <td>{{ item.quantity }}</td>
-            <td>${{ item.price|floatformat:2 }}</td>
-            <td>${{ item.total_price|floatformat:2 }}</td>
-            <td>
-                <form method="post" action="{% url 'remove_from_cart' item.cart_item_id %}">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% load i18n %}{% trans "My Cart" %}</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .table th, .table td {
+            vertical-align: middle;
+        }
+        .btn {
+            min-width: 100px;
+        }
+        .table-container {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-top: 20px;
+        }
+        h1, h3 {
+            color: #343a40;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">{% trans "My Cart" %}</h1>
+        <div class="table-container">
+            <table class="table table-bordered table-hover">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>{% trans "Book" %}</th>
+                        <th>{% trans "Quantity" %}</th>
+                        <th>{% trans "Price" %}</th>
+                        <th>{% trans "Total" %}</th>
+                        <th>{% trans "Actions" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in cart_items %}
+                    <tr>
+                        <td>{{ item.book.title }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td>${{ item.price|floatformat:2 }}</td>
+                        <td>${{ item.total_price|floatformat:2 }}</td>
+                        <td>
+                            <form method="post" action="{% url 'remove_from_cart' item.cart_item_id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger btn-sm">{% trans "Remove" %}</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center">{% trans "Your cart is empty." %}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <div class="text-right">
+                <h3>{% trans "Total" %}: ${{ cart_total|floatformat:2 }}</h3>
+                <form method="post" action="{% url 'place_order' %}" class="d-inline">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-danger btn-sm">{% trans "Remove" %}</button>
+                    <button type="submit" class="btn btn-success">{% trans "Place Order" %}</button>
                 </form>
-            </td>
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="5" class="text-center">{% trans "Your cart is empty." %}</td>
-        </tr>
-        {% endfor %}
-        </tbody>
-    </table>
-    <div class="text-right">
-        <h3>{% trans "Total" %}: ${{ cart_total|floatformat:2 }}</h3>
-        <form method="post" action="{% url 'place_order' %}">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-success">{% trans "Place Order" %}</button>
-        </form>
-        <a href="{% url 'book_list' %}" class="btn btn-primary">{% trans "Continue Shopping" %}</a>
+                <a href="{% url 'book_list' %}" class="btn btn-primary ml-2">{% trans "Continue Shopping" %}</a>
+            </div>
+        </div>
     </div>
-</div>
-{% endblock %}
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

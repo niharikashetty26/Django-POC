@@ -5,8 +5,55 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
     <style>
-        #customers {
+        body {
             font-family: Arial, Helvetica, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+        }
+
+        .sidebar {
+            height: 100vh;
+            width: 250px;
+            background-color: #333;
+            color: white;
+            padding: 20px;
+            position: fixed;
+            transition: width 0.3s;
+        }
+
+        .sidebar h2 {
+            color: #04AA6D;
+        }
+
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+            display: block;
+            padding: 10px 0;
+        }
+
+        .sidebar a:hover {
+            background-color: #575757;
+        }
+
+        .main {
+            margin-left: 250px;
+            padding: 20px;
+            flex-grow: 1;
+            transition: margin-left 0.3s;
+        }
+
+        .card {
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        #customers {
             border-collapse: collapse;
             width: 100%;
             margin-bottom: 20px;
@@ -21,14 +68,7 @@
             background-color: #f2f2f2;
         }
 
-        #customers tr:hover {
-            background-color: #ddd;
-        }
-
         #customers th {
-            padding-top: 12px;
-            padding-bottom: 12px;
-            text-align: left;
             background-color: #04AA6D;
             color: white;
         }
@@ -36,85 +76,118 @@
 </head>
 <body>
 
-<h1>Admin Dashboard</h1>
+<div class="sidebar">
+    <h2>Admin Dashboard</h2>
+    <a href="#" onclick="showSection('view-orders')">View Orders</a>
+    <a href="#" onclick="showSection('books-available')">Books Available</a>
+    <a href="#" onclick="showSection('users-admins')">Users & Admins</a>
+</div>
 
-<h2>Users</h2>
-<table id="customers">
-    <tr>
-        <th>Username</th>
-        <th>Joined Date</th>
-    </tr>
-    {% for user in users %}
-        <tr>
-            <td>{{ user.user.username }}</td>
-            <td>{{ user.user.date_joined }}</td>
-        </tr>
-    {% empty %}
-        <tr>
-            <td colspan="2">No users found.</td>
-        </tr>
-    {% endfor %}
-</table>
+<div class="main">
+    <div id="view-orders" class="card" style="display:block;">
+        <h2>View Orders</h2>
+        <table id="customers">
+            <tr>
+                <th>Order ID</th>
+                <th>Username</th>
+                <th>Books Ordered</th>
+                <th>Total Quantity</th>
+                <th>Order Date</th>
+            </tr>
+            {% for order in orders %}
+            <tr>
+                <td>{{ forloop.counter }}</td> <!-- Using forloop.counter for Order ID -->
+                <td>{{ order.user.username }}</td>
+                <td>{{ order.books|join:", " }}</td>
+                <td>{{ order.total_quantity }}</td>
+                <td>{{ order.order_date }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5">No orders found.</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
 
-<h2>Admins</h2>
-<table id="customers">
-    <tr>
-        <th>Admin Username</th>
-        <th>Role</th>
-    </tr>
-    {% for admin in admins %}
-        <tr>
-            <td>{{ admin.user.username }}</td>
-            <td>{{ admin.role }}</td>
-        </tr>
-    {% empty %}
-        <tr>
-            <td colspan="2">No admins found.</td>
-        </tr>
-    {% endfor %}
-</table>
+    <div id="books-available" class="card" style="display:none;">
+        <h2>Books Available</h2>
+        <table id="customers">
+            <tr>
+                <th>Title</th>
+                <th>Author</th>
+                <th>Price</th>
+                <th>Quantity</th>
+            </tr>
+            {% for book in books %}
+            <tr>
+                <td>{{ book.title }}</td>
+                <td>{{ book.author }}</td>
+                <td>${{ book.price }}</td>
+                <td>{{ book.quantity }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4">No books available.</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
 
-<h2>Total Books</h2>
-<table id="customers">
-    <tr>
-        <th>Title</th>
-        <th>Author</th>
-        <th>Price</th>
-        <th>Quantity</th>
-    </tr>
-    {% for book in books %}
-        <tr>
-            <td>{{ book.title }}</td>
-            <td>{{ book.author }}</td>
-            <td>${{ book.price }}</td>
-            <td>{{ book.quantity }}</td>
-        </tr>
-    {% empty %}
-        <tr>
-            <td colspan="4">No books found.</td>
-        </tr>
-    {% endfor %}
-</table>
+    <div id="users-admins" class="card" style="display:none;">
+        <h2>Users & Admins</h2>
+        <h3>Users</h3>
+        <table id="customers">
+            <tr>
+                <th>Username</th>
+                <th>Joined Date</th>
+            </tr>
+            {% for user in users %}
+            <tr>
+                <td>{{ user.user.username }}</td>
+                <td>{{ user.user.date_joined }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="2">No users found.</td>
+            </tr>
+            {% endfor %}
+        </table>
 
-<h2>Orders</h2>
-<table id="customers">
-    <tr>
-        <th>Username</th>
-        <th>Book Title</th>
-        <th>Quantity</th>
-    </tr>
-    {% for order in orders %}
-        <tr>
-            <td>{{ order.user.username }}</td>
-            <td>{{ order.book.title }}</td>
-            <td>{{ order.quantity }}</td>
-        </tr>
-    {% empty %}
-        <tr>
-            <td colspan="3">No orders found.</td>
-        </tr>
-    {% endfor %}
-</table>
+        <h3>Admins</h3>
+        <table id="customers">
+            <tr>
+                <th>Admin Username</th>
+                <th>Role</th>
+            </tr>
+            {% for admin in admins %}
+            <tr>
+                <td>{{ admin.user.username }}</td>
+                <td>{{ admin.role }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="2">No admins found.</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+
+<script>
+    function showSection(sectionId) {
+        // Hide all sections
+        document.getElementById('view-orders').style.display = 'none';
+        document.getElementById('books-available').style.display = 'none';
+        document.getElementById('users-admins').style.display = 'none';
+
+        // Show the selected section
+        document.getElementById(sectionId).style.display = 'block';
+    }
+
+    // Show the view orders section by default
+    showSection('view-orders');
+</script>
 
 </body>
 </html>

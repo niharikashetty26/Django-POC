@@ -124,11 +124,6 @@
     <p>No reviews yet.</p>
     {% endif %}
 
-    {% if user.is_authenticated %}
-    {% if user.is_superuser or user.userprofile.role == 'admin' %}
-    <a href="{% url 'book_update' book.pk %}" class="btn btn-warning mt-3">Edit Book</a>
-    {% endif %}
-    {% endif %}
 
     {% if user.is_authenticated %}
     {% if user.is_superuser or user.userprofile.role == 'admin' %}

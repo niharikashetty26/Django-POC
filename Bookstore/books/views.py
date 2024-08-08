@@ -12,7 +12,9 @@ from django.utils.translation import gettext as _
 from django.utils import translation
 from django.db.models import Q, Count, Sum
 from django.urls import reverse
-from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.postgres.aggregates import ArrayAgg
+from decimal import Decimal
+from collections import defaultdict
 
 
 
@@ -175,57 +177,81 @@ def user_logout(request):
 
 
 
+
 @login_required
 def place_order(request):
     if request.method == 'POST':
         cart_items = Cart.objects.filter(user=request.user)
 
-        # Create orders for each item in the cart
+        if not cart_items.exists():
+            messages.error(request, _("Your cart is empty."))
+            return redirect('cart')  # Redirect to the cart page
+
         for item in cart_items:
+            # Check if there is enough stock before creating the order
+            if item.book.quantity < item.quantity:
+                messages.error(request, _(f"Cannot place order for {item.book.title}. Not enough stock available."))
+                return redirect('cart')  # Redirect to the cart page
+
+            # Create orders for each item in the cart
             order = Order.objects.create(
                 user=request.user,
                 book=item.book,
                 quantity=item.quantity
             )
 
-            # Reduce the book quantity in stock
+            # Reduce the book quantity in stock only after the order is created
             item.book.quantity -= item.quantity
             item.book.save()
 
-        # Optionally clear the cart after placing the order
+        # Clear the cart after placing the order
         cart_items.delete()
-
-        return redirect('order_success')  # Redirect to a success page
+        messages.success(request, _("Order placed successfully!"))
+        return redirect('order_success')
 
     return render(request, 'books/place_order.html')
 
 def order_success(request):
     return render(request, 'books/order_success.html')
+
+
 @login_required
 def add_to_cart(request, book_id):
     book = get_object_or_404(Book, id=book_id)
+
+    # Get the cart item for the current user
+    cart_item = Cart.objects.filter(user=request.user, book=book).first()
+
     if book.quantity > 0:
-        cart_item, created = Cart.objects.get_or_create(user=request.user, book=book)
-        if created:
-            cart_item.quantity = 1
+        # If the item is already in the cart, check if we can increase the quantity
+        if cart_item:
+            if cart_item.quantity < book.quantity:  # Check if there's enough stock
+                cart_item.quantity += 1
+                cart_item.save()
+                messages.success(request, _("Book quantity increased in cart."))
+            else:
+                messages.error(request, _("Cannot add more of this book. Not enough stock available."))
         else:
-            cart_item.quantity += 1
-        cart_item.save()
-        book.quantity -= 1
-        book.save()
-        messages.success(request, _("Book added to cart successfully."))
+            # If it's not in the cart, add it
+            cart_item = Cart.objects.create(user=request.user, book=book, quantity=1)
+            messages.success(request, _("Book added to cart successfully."))
     else:
         messages.error(request, _("Book is out of stock."))
-    return redirect('book_list')
 
+    return redirect('book_list')
 
 @login_required
 def view_cart(request):
     cart_items = Cart.objects.filter(user=request.user).select_related('book')
-    cart_total = sum(item.book.price * item.quantity for item in cart_items)
+
+    # Initialize cart total as Decimal
+    cart_total = Decimal('0.00')
     cart_details = []
+
     for item in cart_items:
         item_total_price = item.book.price * item.quantity
+        cart_total += item_total_price  # Accumulate to cart total
+
         cart_details.append({
             'book': item.book,
             'quantity': item.quantity,
@@ -239,7 +265,6 @@ def view_cart(request):
         'cart_total': cart_total,
     })
 
-
 @login_required
 def remove_from_cart(request, cart_item_id):
     cart_item = get_object_or_404(Cart, id=cart_item_id, user=request.user)
@@ -247,32 +272,26 @@ def remove_from_cart(request, cart_item_id):
     messages.success(request, _("Book removed from cart successfully."))
     return redirect('view_cart')
 
-@staff_member_required
+
 def view_orders(request):
-    orders = Order.objects.all().select_related('user', 'book')
-    return render(request, 'books/view_orders.html', {'orders': orders})
+    # Group orders by user and order_date and annotate with book titles and quantities
+    orders = (
+        Order.objects
+        .select_related('user', 'book')
+        .values('user__username', 'order_date')
+        .annotate(total_quantity=Sum('quantity'), books=ArrayAgg('book__title', distinct=True))
+        .order_by('order_date')
+    )
+
+    context = {
+        'orders': orders,
+    }
+    return render(request, 'books/view_orders.html', context)
 def set_language(request):
     language = request.GET.get('language', 'en')
     translation.activate(language)
     request.session['django_language'] = language
     return redirect(request.META.get('HTTP_REFERER', '/'))
-
-
-
-# @login_required
-# @user_passes_test(is_admin)
-# def admin_dashboard(request):
-#     users = UserProfile.objects.filter(role='customer')  # Fetch all customers
-#     admins = UserProfile.objects.filter(role='admin')  # Fetch all admins
-#     books = Book.objects.all()  # Fetch all books
-#     orders = Cart.objects.all()  # Fetch all orders
-#
-#     return render(request, 'books/admin_dashboard.html', {
-#         'users': users,
-#         'admins': admins,
-#         'books': books,
-#         'orders': orders,
-#     })
 
 
 @login_required
@@ -288,4 +307,21 @@ def admin_dashboard(request):
         'books': books,
         'orders': orders,
     })
+
+
+def order_history_view(request):
+    # Fetch all orders
+    orders = Order.objects.select_related('user', 'book').all()
+
+    # Group orders by user
+    order_summary = defaultdict(lambda: {'books': [], 'quantity': 0})
+
+    for order in orders:
+        order_summary[order.user.username]['books'].append(order.book.title)
+        order_summary[order.user.username]['quantity'] += order.quantity
+
+    # Convert defaultdict to regular dict
+    order_summary = dict(order_summary)
+
+    return render(request, 'your_template.html', {'order_summary': order_summary})
 
