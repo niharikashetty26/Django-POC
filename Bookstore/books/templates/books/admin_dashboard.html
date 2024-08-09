@@ -87,6 +87,7 @@
     <a href="#" onclick="showSection('books-available')">Books Available</a>
     <a href="#" onclick="showSection('users-admins')">Users & Admins</a>
     <a href="#" onclick="showSection('reviews')">Reviews</a>
+    <a href="#" onclick="showSection('highest-bought')">Highest Bought Books</a>
 </div>
 
 <div class="main">
@@ -185,6 +186,13 @@
             <canvas id="ratingsChart"></canvas>
         </div>
     </div>
+
+    <div id="highest-bought" class="card" style="display:none;">
+        <h2>Highest Bought Books</h2>
+        <div class="chart-container">
+            <canvas id="highestBoughtChart"></canvas>
+        </div>
+    </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -195,12 +203,15 @@
         document.getElementById('books-available').style.display = 'none';
         document.getElementById('users-admins').style.display = 'none';
         document.getElementById('reviews').style.display = 'none';
+        document.getElementById('highest-bought').style.display = 'none';
 
         // Show the selected section
         document.getElementById(sectionId).style.display = 'block';
 
         if (sectionId === 'reviews') {
             loadRatingsChart();
+        } else if (sectionId === 'highest-bought') {
+            loadHighestBoughtChart();
         }
     }
 
@@ -225,6 +236,32 @@
                     y: {
                         beginAtZero: true,
                         max: 5
+                    }
+                }
+            }
+        });
+    }
+
+    function loadHighestBoughtChart() {
+        var ctx = document.getElementById('highestBoughtChart').getContext('2d');
+        var highestBoughtData = {
+            labels: {{ highest_bought_data.labels|safe }},
+            datasets: [{
+                label: 'Total Quantity Sold',
+                data: {{ highest_bought_data.data|safe }},
+                backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                borderColor: 'rgba(153, 102, 255, 1)',
+                borderWidth: 1
+            }]
+        };
+
+        var highestBoughtChart = new Chart(ctx, {
+            type: 'bar',
+            data: highestBoughtData,
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
                     }
                 }
             }
