@@ -1,0 +1,187 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-08-05 12:30+0530\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: templates/books/book_list.html:4 templates/books/book_list.html:24
+#, fuzzy
+#| msgid "Book"
+msgid "Book List"
+msgstr "Lista de Libros"
+
+#: templates/books/book_list.html:28
+msgid "Add a New Book"
+msgstr "Agregar un Nuevo Libro"
+
+#: templates/books/book_list.html:35
+#, fuzzy
+#| msgid "Price"
+msgid "Min Price"
+msgstr "Precio Mínimo"
+
+#: templates/books/book_list.html:38
+#, fuzzy
+#| msgid "Price"
+msgid "Max Price"
+msgstr "Precio Máximo"
+
+#: templates/books/book_list.html:42
+msgid "All Genres"
+msgstr "Todos los Géneros"
+
+#: templates/books/book_list.html:43
+#, fuzzy
+#| msgid "Actions"
+msgid "Fiction"
+msgstr "Ficción"
+
+#: templates/books/book_list.html:44
+msgid "Non-Fiction"
+msgstr "No Ficción"
+
+#: templates/books/book_list.html:45
+msgid "Self-help"
+msgstr "Autoayuda"
+
+#: templates/books/book_list.html:49
+msgid "Filter"
+msgstr "Filtrar"
+
+#: templates/books/book_list.html:67
+msgid "Author"
+msgstr "Autor"
+
+#: templates/books/book_list.html:68 templates/books/cart.html:14
+msgid "Price"
+msgstr "Precio"
+
+#: templates/books/book_list.html:69
+msgid "Genre"
+msgstr "Género"
+
+#: templates/books/book_list.html:70
+msgid "Description"
+msgstr "Descripción"
+
+#: templates/books/book_list.html:71
+msgid "Add to Cart"
+msgstr "Agregar al Carrito"
+
+#: templates/books/book_list.html:78
+msgid "No books available."
+msgstr "No hay libros disponibles."
+
+#: templates/books/cart.html:4 templates/books/cart.html:8
+msgid "My Cart"
+msgstr "Mi Carrito"
+
+#: templates/books/cart.html:12
+msgid "Book"
+msgstr "Libro"
+
+#: templates/books/cart.html:13
+msgid "Quantity"
+msgstr "Cantidad"
+
+#: templates/books/cart.html:15 templates/books/cart.html:41
+msgid "Total"
+msgstr "Total"
+
+#: templates/books/cart.html:16
+msgid "Actions"
+msgstr "Acciones"
+
+#: templates/books/cart.html:29
+msgid "Remove"
+msgstr "Eliminar"
+
+#: templates/books/cart.html:35
+msgid "Your cart is empty."
+msgstr "Tu carrito está vacío."
+
+#: templates/books/cart.html:42
+msgid "Continue Shopping"
+msgstr "Continuar Comprando"
+
+#: templates/books/login.html:7 templates/books/login.html:11
+msgid "Login"
+msgstr "Iniciar Sesión"
+
+#: templates/books/login.html:16
+msgid "Language"
+msgstr "Idioma"
+
+#: templates/books/login.html:18
+msgid "English"
+msgstr "Inglés"
+
+#: templates/books/login.html:19
+msgid "Spanish"
+msgstr "Español"
+
+#: templates/books/login.html:27
+msgid "Username"
+msgstr "Nombre de Usuario"
+
+#: templates/books/login.html:31
+msgid "Password"
+msgstr "Contraseña"
+
+#: templates/books/login.html:34
+msgid "Submit"
+msgstr "Enviar"
+
+#: templates/books/login.html:44
+msgid "Forgot your password?"
+msgstr "¿Olvidaste tu contraseña?"
+
+#: templates/books/profile.html:8 templates/books/profile.html:12
+msgid "User Profile"
+msgstr "Perfil de Usuario"
+
+#: templates/books/profile.html:16
+msgid "Username:"
+msgstr "Nombre de Usuario:"
+
+#: templates/books/profile.html:17
+msgid "Email:"
+msgstr "Correo Electrónico:"
+
+#: templates/books/profile.html:18
+msgid "Role:"
+msgstr "Rol:"
+
+#: templates/books/profile.html:24
+msgid "Go to Book List"
+msgstr "Ir a la Lista de Libros"
+
+#: templates/books/profile.html:25
+msgid "Logout"
+msgstr "Cerrar Sesión"
+
+#: views.py:172
+msgid "Book added to cart successfully."
+msgstr "Libro agregado al carrito con éxito."
+
+#: views.py:174
+msgid "Book is out of stock."
+msgstr "El libro está agotado."
+
+#: views.py:205
+msgid "Book removed from cart successfully."
+msgstr "Libro eliminado del carrito con éxito."
