@@ -232,21 +232,17 @@ def order_success(request):
 @login_required
 def add_to_cart(request, book_id):
     book = get_object_or_404(Book, id=book_id)
-
-    # Get the cart item for the current user
     cart_item = Cart.objects.filter(user=request.user, book=book).first()
 
     if book.quantity > 0:
-        # If the item is already in the cart, check if we can increase the quantity
         if cart_item:
-            if cart_item.quantity < book.quantity:  # Check if there's enough stock
+            if cart_item.quantity < book.quantity:
                 cart_item.quantity += 1
                 cart_item.save()
                 messages.success(request, _("Book quantity increased in cart."))
             else:
                 messages.error(request, _("Cannot add more of this book. Not enough stock available."))
         else:
-            # If it's not in the cart, add it
             cart_item = Cart.objects.create(user=request.user, book=book, quantity=1)
             messages.success(request, _("Book added to cart successfully."))
     else:
@@ -317,7 +313,6 @@ def admin_dashboard(request):
     users = UserProfile.objects.filter(role='customer')
     admins = UserProfile.objects.filter(role='admin')
 
-    # Calculate average ratings for each book
     ratings_data = {
         'labels': [],
         'data': [],
@@ -328,7 +323,6 @@ def admin_dashboard(request):
         ratings_data['labels'].append(book.title)
         ratings_data['data'].append(average_rating)
 
-    # Calculate the highest bought books
     highest_bought_data = {
         'labels': [],
         'data': [],
