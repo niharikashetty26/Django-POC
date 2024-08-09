@@ -6,7 +6,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">  <!-- Link to your CSS file -->
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <title>{% trans "Login" %}</title>
 </head>
 <body>
@@ -27,9 +27,7 @@
 
             <button type="submit">{% trans "Submit" %}</button>
         </form>
-        <p>
-            <a href="{% url 'password_reset' %}">{% trans "Forgot your password?" %}</a>
-        </p>
+
         <p>
             <a href="{% url 'register' %}">{% trans "Don't have an account? Register here." %}</a>
         </p>
