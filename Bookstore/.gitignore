@@ -5,7 +5,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-
+Bookstore/__pycache__/
 
 .idea/
 .vscode/
@@ -17,3 +17,5 @@ __pycache__/
 #virtual
 venv/
 
+
+media/
