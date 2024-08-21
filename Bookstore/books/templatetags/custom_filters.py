@@ -2,9 +2,7 @@ from django import template
 
 register = template.Library()
 
+
 @register.filter
-def multiply(value, arg):
-    try:
-        return value * arg
-    except (ValueError, TypeError):
-        return ''
+def add_class(field, css_class):
+    return field.as_widget(attrs={"class": css_class})
