@@ -1,0 +1,20 @@
+[
+  {
+    "model": "books.cart",
+    "pk": 61,
+    "fields": {
+      "user": 1,
+      "book": 4,
+      "quantity": 3
+    }
+  },
+  {
+    "model": "books.cart",
+    "pk": 62,
+    "fields": {
+      "user": 1,
+      "book": 13,
+      "quantity": 1
+    }
+  }
+]
