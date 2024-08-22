@@ -1,5 +1,7 @@
+# models.py
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 class Book(models.Model):
     title = models.CharField(max_length=200)
@@ -8,7 +10,7 @@ class Book(models.Model):
     cover_image = models.ImageField(upload_to='covers/', null=True)
     description = models.TextField()
     genre = models.CharField(max_length=50)
-    quantity = models.PositiveIntegerField()
+    quantity = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return self.title
@@ -26,18 +28,6 @@ class UserProfile(models.Model):
     def __str__(self):
         return self.user.username
 
-
-class Cart(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    items = models.ManyToManyField(Book, through='CartItem')
-
-    def __str__(self):
-        return f"Cart of {self.user.username}"
-
-    @property
-    def total_price(self):
-        return self.items.aggregate(total=Sum('cartitem__total_price'))['total'] or 0.00
-
 class Cart(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     book = models.ForeignKey(Book, on_delete=models.CASCADE)
@@ -48,4 +38,24 @@ class Cart(models.Model):
 
     def get_total_price(self):
         return self.book.price * self.quantity
+class Order(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('completed', 'Completed'),
+        ('cancelled', 'Cancelled'),
+    ]
 
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(default=timezone.now)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
+
+    def __str__(self):
+        return f"Order {self.id} by {self.user.username} - {self.status}"
+
+class OrderItem(models.Model):
+    order = models.ForeignKey(Order, related_name='items', on_delete=models.CASCADE)
+    book = models.ForeignKey('Book', on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField()
+
+    def __str__(self):
+        return f"{self.quantity} x {self.book.title} for Order {self.order.id}"
