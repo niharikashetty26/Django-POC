@@ -36,19 +36,38 @@ class CartSerializer(serializers.ModelSerializer):
     class Meta:
         model = Cart
         fields = ['id', 'user', 'book', 'quantity']
-        read_only_fields = ['user']  # Make user read-only, it's set by the view
+        read_only_fields = ['user']
 
     def create(self, validated_data):
-        user = self.context['request'].user  # Get the user from the request context
+        user = self.context['request'].user
         validated_data['user'] = user
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
-        # Update quantity if provided, otherwise keep the existing quantity
         instance.quantity = validated_data.get('quantity', instance.quantity)
         instance.save()
         return instance
 
+class AddMultipleBooksToCartSerializer(serializers.Serializer):
+    books = serializers.ListField(
+        child=serializers.DictField(child=serializers.IntegerField()),
+        write_only=True
+    )
+
+    def validate_books(self, value):
+        for item in value:
+            if 'book_id' not in item or 'quantity' not in item:
+                raise serializers.ValidationError("Each book item must contain 'book_id' and 'quantity'")
+            if not Book.objects.filter(id=item['book_id']).exists():
+                raise serializers.ValidationError(f"Book with id {item['book_id']} does not exist.")
+        return value
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        for item in validated_data['books']:
+            book = Book.objects.get(id=item['book_id'])
+            Cart.objects.create(user=user, book=book, quantity=item['quantity'])
+        return validated_data
 
 class OrderItemSerializer(serializers.ModelSerializer):
     class Meta:

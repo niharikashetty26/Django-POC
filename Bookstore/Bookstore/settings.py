@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'books',
     'rest_framework',
     'rest_framework.authtoken',
+    'drf_yasg',
 ]
 
 MIDDLEWARE = [
@@ -149,7 +150,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 LOGOUT_REDIRECT_URL = 'login'
 LOGIN_REDIRECT_URL = 'book_list'
 
-
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -160,7 +160,6 @@ REST_FRAMEWORK = {
 }
 
 from datetime import timedelta
-
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=365),  # Set to 1 year (or as per your preference)

@@ -9,7 +9,8 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth.models import User
 from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly, IsAuthenticated
 from .models import Book, Cart, Order, OrderItem
-from .serializers import RegisterSerializer, BookSerializer, CartSerializer, OrderSerializer
+from .serializers import RegisterSerializer, BookSerializer, CartSerializer, OrderSerializer, \
+    AddMultipleBooksToCartSerializer
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -56,6 +57,34 @@ class CartViewSet(viewsets.ModelViewSet):
     serializer_class = CartSerializer
     permission_classes = [IsAuthenticated]
 
+    @action(detail=False, methods=['post'])
+    def add_books(self, request):
+        user = request.user
+        books_data = request.data.get('books', [])
+        added_cart_items = []
+
+        for book_data in books_data:
+            book_id = book_data.get('book_id')
+            quantity = book_data.get('quantity', 1)
+
+            # Assuming book exists
+            book = Book.objects.get(id=book_id)
+
+            # Check if this book is already in the cart
+            cart_item, created = Cart.objects.get_or_create(user=user, book=book)
+
+            if not created:
+                cart_item.quantity += quantity
+            else:
+                cart_item.quantity = quantity
+
+            cart_item.save()
+
+            # Serialize and add the item to the response list
+            serialized_item = CartSerializer(cart_item)
+            added_cart_items.append(serialized_item.data)
+
+        return Response(added_cart_items, status=status.HTTP_201_CREATED)
     def get_queryset(self):
         user = self.request.user
         return Cart.objects.filter(user=user)
