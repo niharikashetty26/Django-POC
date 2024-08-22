@@ -2,7 +2,7 @@
 
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Book, Cart
+from .models import Book, CartItem, Cart
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -33,27 +33,4 @@ class BookSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class CartSerializer(serializers.ModelSerializer):
-    book = serializers.PrimaryKeyRelatedField(queryset=Book.objects.all())
 
-    class Meta:
-        model = Cart
-        fields = ['id', 'book', 'quantity', 'total_price']
-        read_only_fields = ['total_price']  # Mark total_price as read-only
-
-    def create(self, validated_data):
-        user = self.context['request'].user
-        cart_item, created = Cart.objects.get_or_create(
-            user=user,
-            book=validated_data['book'],
-            defaults={'quantity': validated_data['quantity']}
-        )
-        if not created:
-            cart_item.quantity += validated_data['quantity']
-            cart_item.save()
-        return cart_item
-
-    def update(self, instance, validated_data):
-        instance.quantity = validated_data.get('quantity', instance.quantity)
-        instance.save()
-        return instance
