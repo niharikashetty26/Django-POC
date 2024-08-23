@@ -1,1 +1,0 @@
-[{"model": "books.cart", "pk": 10, "fields": {"user": 7, "book": 5, "quantity": 1}}, {"model": "books.cart", "pk": 11, "fields": {"user": 7, "book": 4, "quantity": 1}}]
