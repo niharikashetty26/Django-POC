@@ -1,8 +1,8 @@
-# serializers.py
-
-from rest_framework import serializers
+from rest_framework import serializers, viewsets
 from django.contrib.auth.models import User
-from .models import Book, Cart, Order, OrderItem
+from rest_framework.permissions import IsAuthenticated
+
+from .models import Book, Cart, Order, OrderItem, Review, UserProfile
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -27,10 +27,34 @@ class RegisterSerializer(serializers.ModelSerializer):
         return user
 
 
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        fields = ['user', 'role']
+
+
 class BookSerializer(serializers.ModelSerializer):
+    reviews = serializers.StringRelatedField(many=True, read_only=True)
+
     class Meta:
         model = Book
         fields = '__all__'
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    user = serializers.StringRelatedField(read_only=True)
+    book = serializers.PrimaryKeyRelatedField(queryset=Book.objects.all())  # Book ID only
+
+    class Meta:
+        model = Review
+        fields = ['id', 'user', 'rating', 'comment', 'created_at', 'book']
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        validated_data['user'] = user
+        return super().create(validated_data)
+
+
 
 class CartSerializer(serializers.ModelSerializer):
     class Meta:
@@ -43,10 +67,6 @@ class CartSerializer(serializers.ModelSerializer):
         validated_data['user'] = user
         return super().create(validated_data)
 
-    def update(self, instance, validated_data):
-        instance.quantity = validated_data.get('quantity', instance.quantity)
-        instance.save()
-        return instance
 
 class AddMultipleBooksToCartSerializer(serializers.Serializer):
     books = serializers.ListField(
@@ -69,14 +89,35 @@ class AddMultipleBooksToCartSerializer(serializers.Serializer):
             Cart.objects.create(user=user, book=book, quantity=item['quantity'])
         return validated_data
 
+
 class OrderItemSerializer(serializers.ModelSerializer):
+    book = BookSerializer(read_only=True)
+
     class Meta:
         model = OrderItem
         fields = ['id', 'book', 'quantity']
 
 class OrderSerializer(serializers.ModelSerializer):
-    items = OrderItemSerializer(many=True, read_only=True)  # Optional if you want to include items in the response
+    items = OrderItemSerializer(many=True, read_only=True)
+    total_price = serializers.SerializerMethodField()
 
     class Meta:
         model = Order
-        fields = ['id', 'user', 'created_at', 'status', 'items']  # Ensure 'user' is included if needed
+        fields = ['id', 'user', 'status', 'order_date', 'total_price', 'items']  # Ensure 'status' is included
+
+    def get_total_price(self, obj):
+        return sum(item.book.price * item.quantity for item in obj.items.all())
+
+class ReviewViewSet(viewsets.ModelViewSet):
+    serializer_class = ReviewSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = Review.objects.all()
+        book_id = self.request.query_params.get('book_id')
+        if book_id is not None:
+            queryset = queryset.filter(book_id=book_id)
+        return queryset
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
