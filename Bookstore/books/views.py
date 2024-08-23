@@ -305,6 +305,47 @@ def set_language(request):
     request.session['django_language'] = language
     return redirect(request.META.get('HTTP_REFERER', '/'))
 
+#
+# @login_required
+# def admin_dashboard(request):
+#     orders = Order.objects.all()
+#     books = Book.objects.all()
+#     users = UserProfile.objects.filter(role='customer')
+#     admins = UserProfile.objects.filter(role='admin')
+#
+#     ratings_data = {
+#         'labels': [],
+#         'data': [],
+#     }
+#
+#     for book in books:
+#         average_rating = Review.objects.filter(book=book).aggregate(average=Sum('rating'))['average'] or 0
+#         ratings_data['labels'].append(book.title)
+#         ratings_data['data'].append(average_rating)
+#
+#     highest_bought_data = {
+#         'labels': [],
+#         'data': [],
+#     }
+#
+#     highest_bought_books = Order.objects.values('book__title').annotate(total_quantity=Sum('quantity')).order_by(
+#         '-total_quantity')[:5]
+#
+#     for entry in highest_bought_books:
+#         highest_bought_data['labels'].append(entry['book__title'])
+#         highest_bought_data['data'].append(entry['total_quantity'])
+#
+#     context = {
+#         'orders': orders,
+#         'books': books,
+#         'users': users,
+#         'admins': admins,
+#         'ratings_data': ratings_data,
+#         'highest_bought_data': highest_bought_data,
+#     }
+#
+#     return render(request, 'books/admin_dashboard.html', context)
+
 
 @login_required
 def admin_dashboard(request):
@@ -345,7 +386,6 @@ def admin_dashboard(request):
     }
 
     return render(request, 'books/admin_dashboard.html', context)
-
 
 def order_history_view(request):
     orders = Order.objects.select_related('user', 'book').all()
