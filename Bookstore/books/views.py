@@ -9,8 +9,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth.models import User
 from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly, IsAuthenticated
 from .models import Book, Cart, Order, OrderItem
-from .serializers import RegisterSerializer, BookSerializer, CartSerializer, OrderSerializer, \
-    AddMultipleBooksToCartSerializer
+from .serializers import RegisterSerializer, BookSerializer, CartSerializer, OrderSerializer, AddMultipleBooksToCartSerializer
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -66,11 +65,7 @@ class CartViewSet(viewsets.ModelViewSet):
         for book_data in books_data:
             book_id = book_data.get('book_id')
             quantity = book_data.get('quantity', 1)
-
-            # Assuming book exists
             book = Book.objects.get(id=book_id)
-
-            # Check if this book is already in the cart
             cart_item, created = Cart.objects.get_or_create(user=user, book=book)
 
             if not created:
@@ -79,12 +74,11 @@ class CartViewSet(viewsets.ModelViewSet):
                 cart_item.quantity = quantity
 
             cart_item.save()
-
-            # Serialize and add the item to the response list
             serialized_item = CartSerializer(cart_item)
             added_cart_items.append(serialized_item.data)
 
         return Response(added_cart_items, status=status.HTTP_201_CREATED)
+
     def get_queryset(self):
         user = self.request.user
         return Cart.objects.filter(user=user)
@@ -105,19 +99,13 @@ class OrderViewSet(viewsets.ViewSet):
             return Response({'detail': 'Authentication credentials were not provided.'},
                             status=status.HTTP_401_UNAUTHORIZED)
 
-        # Fetch items from cart
         cart_items = Cart.objects.filter(user=user)
         if not cart_items:
             return Response({'detail': 'Cart is empty.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Create an Order
         order = Order.objects.create(user=user, status='pending')
-
-        # Add OrderItems
         for item in cart_items:
             OrderItem.objects.create(order=order, book=item.book, quantity=item.quantity)
-
-        # Optionally clear the cart after creating the order
         cart_items.delete()
 
         serializer = OrderSerializer(order)
