@@ -1,0 +1,32 @@
+[
+{
+    "model": "books.order",
+    "pk": 1,
+    "fields": {
+        "user": 2,
+        "book": 1,
+        "quantity": 1,
+        "order_date": "2024-08-23T06:36:17.997Z"
+    }
+},
+{
+    "model": "books.order",
+    "pk": 2,
+    "fields": {
+        "user": 3,
+        "book": 4,
+        "quantity": 1,
+        "order_date": "2024-08-23T06:37:09.750Z"
+    }
+},
+{
+    "model": "books.order",
+    "pk": 3,
+    "fields": {
+        "user": 4,
+        "book": 2,
+        "quantity": 1,
+        "order_date": "2024-08-23T06:37:50.137Z"
+    }
+}
+]
