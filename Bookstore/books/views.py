@@ -149,7 +149,6 @@ class OrderViewSet(viewsets.ModelViewSet):
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
 
-        # Ensure only the status field is being updated
         if not request.data.get('status'):
             return Response(
                 {"detail": "Only the 'status' field can be updated."},
@@ -161,7 +160,6 @@ class OrderViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
 
-        # If the order status is updated to 'completed', deduct the quantity of the books
         if previous_status != 'completed' and serializer.validated_data.get('status') == 'completed':
             for item in instance.items.all():
                 item.book.quantity -= item.quantity
