@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import UserProfile, Book, Review, Cart
+from Bookstore.books.models import UserProfile, Book, Review, Cart
 
 # Custom Admin for UserProfile
 class UserProfileAdmin(admin.ModelAdmin):

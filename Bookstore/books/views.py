@@ -1,16 +1,14 @@
-from django.conf import settings
-from django.http import HttpResponseBadRequest
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Book, Cart, Order, Review
+from Bookstore.books.models import Book, Cart, Order, Review
 from django.contrib import messages
 from .forms import BookForm
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm
-from .models import UserProfile
+from Bookstore.books.models import UserProfile
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.utils.translation import gettext as _
 from django.utils import translation
-from django.db.models import Q, Count, Sum, Avg
+from django.db.models import Q, Count, Sum
 from django.urls import reverse
 from django.contrib.postgres.aggregates import ArrayAgg
 from decimal import Decimal
@@ -305,6 +303,7 @@ def set_language(request):
     request.session['django_language'] = language
     return redirect(request.META.get('HTTP_REFERER', '/'))
 
+
 #
 # @login_required
 # def admin_dashboard(request):
@@ -386,6 +385,7 @@ def admin_dashboard(request):
     }
 
     return render(request, 'books/admin_dashboard.html', context)
+
 
 def order_history_view(request):
     orders = Order.objects.select_related('user', 'book').all()
