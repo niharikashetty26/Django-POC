@@ -5,11 +5,11 @@ from django.utils import timezone
 
 class Book(models.Model):
     title = models.CharField(max_length=200)
-    author = models.CharField(max_length=200)  # Updated max_length to 200 to match Day-70
+    author = models.CharField(max_length=200)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     cover_image = models.ImageField(upload_to='covers/', blank=True, null=True)
     description = models.TextField(blank=True)
-    genre = models.CharField(max_length=100)  # Updated max_length to 100 to match Day-70
+    genre = models.CharField(max_length=100)
     quantity = models.PositiveIntegerField(default=1)
 
     def __str__(self):
@@ -36,7 +36,7 @@ class Cart(models.Model):
     quantity = models.PositiveIntegerField(default=1)
 
     @property
-    def total_price(self):  # Renamed to match Day-70 branch
+    def total_price(self):
         return self.book.price * self.quantity
 
     def __str__(self):
@@ -56,6 +56,7 @@ class Order(models.Model):
     def __str__(self):
         return f"Order {self.id} by {self.user.username}"
 
+
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, related_name='items', on_delete=models.CASCADE)
     book = models.ForeignKey(Book, on_delete=models.CASCADE)
@@ -63,6 +64,7 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return f"Item {self.id} in Order {self.order.id}"
+
 
 class Review(models.Model):
     book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name='reviews')

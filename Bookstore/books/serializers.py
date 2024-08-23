@@ -55,7 +55,6 @@ class ReviewSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 
-
 class CartSerializer(serializers.ModelSerializer):
     class Meta:
         model = Cart
@@ -97,6 +96,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
         model = OrderItem
         fields = ['id', 'book', 'quantity']
 
+
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True, read_only=True)
     total_price = serializers.SerializerMethodField()
@@ -107,6 +107,7 @@ class OrderSerializer(serializers.ModelSerializer):
 
     def get_total_price(self, obj):
         return sum(item.book.price * item.quantity for item in obj.items.all())
+
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer

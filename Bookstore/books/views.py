@@ -9,7 +9,8 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth.models import User
 from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly, IsAuthenticated
 from .models import Book, Cart, Order, OrderItem, UserProfile
-from .serializers import RegisterSerializer, BookSerializer, CartSerializer, OrderSerializer, AddMultipleBooksToCartSerializer
+from .serializers import RegisterSerializer, BookSerializer, CartSerializer, OrderSerializer, \
+    AddMultipleBooksToCartSerializer
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -45,6 +46,7 @@ class RegisterView(generics.CreateAPIView):
                 "email": user.email,
             }
         }, status=status.HTTP_201_CREATED)
+
 
 class BookViewSet(viewsets.ModelViewSet):
     queryset = Book.objects.all()
@@ -170,4 +172,3 @@ class OrderViewSet(viewsets.ModelViewSet):
 
     def perform_update(self, serializer):
         serializer.save()
-
