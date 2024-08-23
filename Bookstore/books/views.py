@@ -1,10 +1,9 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from Bookstore.books.models import Book, Cart, Order, Review
+from .models import Book, Cart, Order, Review, UserProfile
 from django.contrib import messages
 from .forms import BookForm
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm
-from Bookstore.books.models import UserProfile
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.utils.translation import gettext as _
 from django.utils import translation

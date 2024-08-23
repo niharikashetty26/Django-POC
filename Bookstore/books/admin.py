@@ -1,5 +1,6 @@
 from django.contrib import admin
-from Bookstore.books.models import UserProfile, Book, Review, Cart
+from .models import UserProfile, Book, Review, Cart
+
 
 # Custom Admin for UserProfile
 class UserProfileAdmin(admin.ModelAdmin):
@@ -8,12 +9,14 @@ class UserProfileAdmin(admin.ModelAdmin):
     list_filter = ('role',)
     ordering = ('user__username',)
 
+
 # Custom Admin for Book
 class BookAdmin(admin.ModelAdmin):
     list_display = ('title', 'author', 'genre', 'price', 'quantity')
     search_fields = ('title', 'author', 'genre')
     list_filter = ('genre', 'author')
     ordering = ('title',)
+
 
 # Custom Admin for Review
 class ReviewAdmin(admin.ModelAdmin):
@@ -22,6 +25,7 @@ class ReviewAdmin(admin.ModelAdmin):
     search_fields = ('book__title', 'user__username', 'comment')
     ordering = ('-created_at',)
 
+
 # Custom Admin for Cart
 class CartAdmin(admin.ModelAdmin):
     list_display = ('user', 'book', 'quantity', 'total_price')
@@ -29,7 +33,7 @@ class CartAdmin(admin.ModelAdmin):
     list_filter = ('user',)
     ordering = ('user__username',)
 
-# Register your models with custom admin classes
+
 admin.site.register(UserProfile, UserProfileAdmin)
 admin.site.register(Book, BookAdmin)
 admin.site.register(Review, ReviewAdmin)
