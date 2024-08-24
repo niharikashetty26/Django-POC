@@ -36,7 +36,6 @@ class RegisterView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
 
-        # Create UserProfile only if it doesn't exist
         if not UserProfile.objects.filter(user=user).exists():
             UserProfile.objects.create(user=user, role='customer')
 
