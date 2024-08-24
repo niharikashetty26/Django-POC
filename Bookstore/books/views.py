@@ -1,17 +1,15 @@
 import uuid
 from django.db.models import Sum
-from rest_framework import generics, status, viewsets, permissions, mixins
+from rest_framework import generics, status, viewsets, permissions
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth.models import User
-from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly
 from .models import Book, Cart, Order, OrderItem, UserProfile
-from .serializers import RegisterSerializer, BookSerializer, CartSerializer, OrderSerializer, \
-    AddMultipleBooksToCartSerializer
-
+from .serializers import RegisterSerializer, BookSerializer, CartSerializer, OrderSerializer
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
@@ -21,10 +19,14 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         token['email'] = user.email
         return token
 
-
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
+class IsAdminOrReadOnly(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        return request.user.is_authenticated and request.user.userprofile.role in ['admin', 'superadmin']
 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -36,6 +38,7 @@ class RegisterView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
 
+        # Create UserProfile only if it doesn't exist
         if not UserProfile.objects.filter(user=user).exists():
             UserProfile.objects.create(user=user, role='customer')
 
@@ -46,20 +49,13 @@ class RegisterView(generics.CreateAPIView):
             }
         }, status=status.HTTP_201_CREATED)
 
-
 class BookViewSet(viewsets.ModelViewSet):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
     def perform_create(self, serializer):
-        # Optionally add role-based checks
-        if not self.request.user.is_authenticated:
-            raise PermissionDenied("You must be logged in to create a book.")
-        if not self.request.user.userprofile.role in ['admin', 'superadmin']:
-            raise PermissionDenied("You do not have permission to create a book.")
         serializer.save()
-
 
 class CartViewSet(viewsets.ModelViewSet):
     queryset = Cart.objects.all()
@@ -99,7 +95,6 @@ class CartViewSet(viewsets.ModelViewSet):
 
         return Response(added_cart_items, status=status.HTTP_201_CREATED)
 
-
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
@@ -123,51 +118,33 @@ class OrderViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(order)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    def list(self, request, *args, **kwargs):
-        user = request.user
-        if not user.is_authenticated:
-            return Response({'detail': 'Authentication credentials were not provided.'},
-                            status=status.HTTP_401_UNAUTHORIZED)
-
-        orders = Order.objects.filter(user=user)
-        serializer = self.get_serializer(orders, many=True)
-        return Response(serializer.data)
+    def destroy(self, request, *args, **kwargs):
+        order = self.get_object()
+        if request.user != order.user and request.user.userprofile.role not in ['admin', 'superadmin']:
+            raise PermissionDenied("You do not have permission to delete this order.")
+        return super().destroy(request, *args, **kwargs)
 
     @action(detail=True, methods=['post'])
     def cancel(self, request, pk=None):
-        try:
-            order = Order.objects.get(pk=pk, user=request.user)
-            if order.status != 'pending':
-                return Response({'detail': 'Only pending orders can be canceled.'}, status=status.HTTP_400_BAD_REQUEST)
-
-            order.status = 'cancelled'
-            order.save()
-            serializer = self.get_serializer(order)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        except Order.DoesNotExist:
-            return Response({'detail': 'Order not found.'}, status=status.HTTP_404_NOT_FOUND)
+        order = self.get_object()
+        if order.user != request.user and request.user.userprofile.role not in ['admin', 'superadmin']:
+            raise PermissionDenied("You do not have permission to cancel this order.")
+        if order.status != 'pending':
+            return Response({'detail': 'Only pending orders can be canceled.'}, status=status.HTTP_400_BAD_REQUEST)
+        order.status = 'cancelled'
+        order.save()
+        serializer = self.get_serializer(order)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
+        if request.user.userprofile.role not in ['admin', 'superadmin']:
+            raise PermissionDenied("Only admins can update the status of orders.")
+        return super().update(request, *args, **kwargs)
 
-        if not request.data.get('status'):
-            return Response(
-                {"detail": "Only the 'status' field can be updated."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        previous_status = instance.status
-        serializer = self.get_serializer(instance, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
-
-        if previous_status != 'completed' and serializer.validated_data.get('status') == 'completed':
+    def perform_update(self, serializer):
+        instance = serializer.save()
+        if instance.status == 'completed':
             for item in instance.items.all():
                 item.book.quantity -= item.quantity
                 item.book.save()
-
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
-
-    def perform_update(self, serializer):
-        serializer.save()
