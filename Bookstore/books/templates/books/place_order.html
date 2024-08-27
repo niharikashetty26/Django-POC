@@ -1,22 +1,24 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Place Order</title>
-</head>
-<body>
-    <h1>Place Your Order</h1>
+{% extends 'base.html' %}
+
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "Place Order" %}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>{% trans "Place Your Order" %}</h1>
 
     {% if cart_items %}
-        <form method="POST">
+        <form method="POST" action="{% url 'place_order' %}">
             {% csrf_token %}
-            <table>
-                <thead>
+            <table class="table table-bordered">
+                <thead class="thead-dark">
                     <tr>
-                        <th>Book</th>
-                        <th>Quantity</th>
-                        <th>Price</th>
-                        <th>Total</th>
+                        <th>{% trans "Book" %}</th>
+                        <th>{% trans "Quantity" %}</th>
+                        <th>{% trans "Price" %}</th>
+                        <th>{% trans "Total" %}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -24,16 +26,21 @@
                         <tr>
                             <td>{{ item.book.title }}</td>
                             <td>{{ item.quantity }}</td>
-                            <td>${{ item.book.price }}</td>
-                            <td>${{ item.book.price|floatformat:2 * item.quantity|floatformat:0 }}</td>
+                            <td>${{ item.book.price|floatformat:2 }}</td>
+                            <td>${{ item.book.price|floatformat:2|floatformat:2 * item.quantity|floatformat:2 }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>
             </table>
-            <button type="submit">Place Order</button>
+            <p>{% trans "Total Order Price" %}: ${{ total_order_price|floatformat:2 }}</p>
+            <!-- Render button only if there are cart items -->
+            <button type="submit" class="btn btn-primary">{% trans "Place Order" %}</button>
         </form>
     {% else %}
-        <p>Your cart is empty. Please add items to your cart before placing an order.</p>
+        <p>{% trans "Your cart is empty. Please add items to your cart before placing an order." %}</p>
+        <!-- Optionally, provide a link to the cart or book list -->
+        <a href="{% url 'view_cart' %}">{% trans "Go to Cart" %}</a> or
+        <a href="{% url 'book_list' %}">{% trans "Browse Books" %}</a>
     {% endif %}
-</body>
-</html>
+</div>
+{% endblock %}

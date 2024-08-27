@@ -1,4 +1,6 @@
+from django.db import transaction
 from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.models import User
 from .models import Book, Cart, Order, Review, UserProfile
 from django.contrib import messages
 from .forms import BookForm
@@ -36,7 +38,7 @@ def book_list(request):
     if query:
         books = books.filter(Q(title__icontains=query) | Q(author__icontains=query) | Q(genre__icontains=query))
     if genre:
-        books = books.filter(genre__icontains=genre)
+        books = books.filter(genre__iexact=genre)
     if author:
         books = books.filter(author__icontains=author)
     if price_min:
@@ -154,7 +156,6 @@ def register(request):
         form = UserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            # Check if the UserProfile already exists for this user
             if not UserProfile.objects.filter(user=user).exists():
                 UserProfile.objects.create(user=user, role='customer')
             messages.success(request, _("Registration successful! You can now log in."))
@@ -182,7 +183,10 @@ def user_login(request):
             messages.success(request, _("Login successful!"))
             return redirect('book_list')
         else:
-            messages.error(request, _("Invalid username or password."))
+            if User.objects.filter(username=username).exists():
+                messages.error(request, _("Incorrect password. Please try again."))
+            else:
+                messages.error(request, _("Invalid username or password."))
 
     return render(request, 'books/login.html')
 
@@ -193,20 +197,27 @@ def user_logout(request):
     return redirect(reverse('login'))
 
 
+
 @login_required
 def place_order(request):
-    if request.method == 'POST':
-        cart_items = Cart.objects.filter(user=request.user)
+    cart_items = Cart.objects.filter(user=request.user)
 
+    if request.method == 'POST':
         if not cart_items.exists():
             messages.error(request, _("Your cart is empty."))
-            return redirect('cart')
+            return redirect('view_cart')
+
+        total_order_price = 0
 
         for item in cart_items:
             if item.book.quantity < item.quantity:
                 messages.error(request, _(f"Cannot place order for {item.book.title}. Not enough stock available."))
-                return redirect('cart')
-            order = Order.objects.create(
+                return redirect('view_cart')
+
+            item_total_price = item.book.price * item.quantity
+            total_order_price += item_total_price
+
+            Order.objects.create(
                 user=request.user,
                 book=item.book,
                 quantity=item.quantity
@@ -217,10 +228,15 @@ def place_order(request):
 
         cart_items.delete()
         messages.success(request, _("Order placed successfully!"))
+
         return redirect('order_success')
 
-    return render(request, 'books/place_order.html')
+    total_order_price = sum(item.book.price * item.quantity for item in cart_items)
 
+    return render(request, 'books/place_order.html', {
+        'cart_items': cart_items,
+        'total_order_price': total_order_price
+    })
 
 def order_success(request):
     return render(request, 'books/order_success.html')
@@ -275,10 +291,12 @@ def view_cart(request):
 
 @login_required
 def remove_from_cart(request, cart_item_id):
+    print(f"Trying to remove cart item with ID: {cart_item_id}")
     cart_item = get_object_or_404(Cart, id=cart_item_id, user=request.user)
     cart_item.delete()
     messages.success(request, _("Book removed from cart successfully."))
     return redirect('view_cart')
+
 
 
 def view_orders(request):
@@ -396,3 +414,4 @@ def order_history_view(request):
     order_summary = dict(order_summary)
 
     return render(request, 'your_template.html', {'order_summary': order_summary})
+

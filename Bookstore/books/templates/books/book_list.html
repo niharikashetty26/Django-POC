@@ -1,4 +1,4 @@
-{% extends "books/base_template.html" %}
+{% extends "base.html" %}
 {% load i18n %}
 
 {% block title %}{% trans "Book List" %}{% endblock %}
@@ -24,9 +24,9 @@
     <h2 class="text-center mb-4">{% trans "Book List" %}</h2>
 
     {% if user.is_authenticated %}
-    {% if user.is_superuser or user.userprofile.role == 'admin' %}
-    <a href="{% url 'book_create' %}" class="btn btn-success mb-3">{% trans "Add a New Book" %}</a>
-    {% endif %}
+        {% if user.is_superuser or user.userprofile.role == 'admin' %}
+            <a href="{% url 'book_create' %}" class="btn btn-success mb-3">{% trans "Add a New Book" %}</a>
+        {% endif %}
     {% endif %}
 
     <form method="GET" class="mb-4">
@@ -75,7 +75,6 @@
                     {% else %}
                         <p class="text-danger">{% trans "Sold Out" %}</p>
                     {% endif %}
-
                 </div>
             </div>
         </div>
@@ -87,7 +86,6 @@
         </div>
         {% endfor %}
     </div>
-
 </div>
 
 {% endblock %}

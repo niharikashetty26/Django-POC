@@ -12,7 +12,7 @@ urlpatterns = [
 # Include authentication URLs within i18n_patterns
 urlpatterns += i18n_patterns(
     path('', include('books.urls')),
-    path('accounts/', include('django.contrib.auth.urls')),  # Include auth URLs
+    path('accounts/', include('django.contrib.auth.urls')),
 )
 
 if settings.DEBUG:
