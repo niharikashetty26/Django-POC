@@ -6,10 +6,11 @@ from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from django.contrib.auth.models import User
-from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly
+from django.contrib.auth.models import User, Group
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from books.models import Book, Cart, Order, OrderItem, UserProfile
 from .serializers import RegisterSerializer, BookSerializer, CartSerializer, OrderSerializer
+
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
@@ -19,14 +20,28 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         token['email'] = user.email
         return token
 
+
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
+
 
 class IsAdminOrReadOnly(permissions.BasePermission):
     def has_permission(self, request, view):
         if request.method in permissions.SAFE_METHODS:
             return True
         return request.user.is_authenticated and request.user.userprofile.role in ['admin', 'superadmin']
+
+
+class IsCustomerOrAdmin(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if request.method in ['GET', 'POST']:
+            return request.user.is_authenticated and (
+                        request.user.userprofile.role == 'customer' or request.user.userprofile.role in ['admin',
+                                                                                                         'superadmin'])
+        if request.method in ['PUT', 'DELETE']:
+            return request.user.is_authenticated and request.user.userprofile.role in ['admin', 'superadmin']
+        return False
+
 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -42,12 +57,17 @@ class RegisterView(generics.CreateAPIView):
         if not UserProfile.objects.filter(user=user).exists():
             UserProfile.objects.create(user=user, role='customer')
 
+        # Add the user to the "User" group
+        user_group, created = Group.objects.get_or_create(name='User')
+        user.groups.add(user_group)
+
         return Response({
             "user": {
                 "username": user.username,
                 "email": user.email,
             }
         }, status=status.HTTP_201_CREATED)
+
 
 class BookViewSet(viewsets.ModelViewSet):
     queryset = Book.objects.all()
@@ -57,10 +77,11 @@ class BookViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save()
 
+
 class CartViewSet(viewsets.ModelViewSet):
     queryset = Cart.objects.all()
     serializer_class = CartSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsCustomerOrAdmin]
 
     @action(detail=False, methods=['post'])
     def add_books(self, request):
@@ -94,6 +115,7 @@ class CartViewSet(viewsets.ModelViewSet):
             added_cart_items.append(serialized_item.data)
 
         return Response(added_cart_items, status=status.HTTP_201_CREATED)
+
 
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()

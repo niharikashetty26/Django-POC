@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, include
 from django.contrib.auth import views as auth_views
 from .views import (
     book_list,
@@ -41,5 +41,6 @@ urlpatterns = [
     path('order/', place_order, name='place_order'),
     path('order/success/', order_success, name='order_success'),
     path('admin/orders/', view_orders, name='view_orders'),
+    path('api/', include('books.api.urls')),
 
 ]

@@ -9,9 +9,11 @@ https://docs.djangoproject.com/en/4.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
-
+from datetime import timedelta
 from pathlib import Path
 import os
+
+from django.conf import settings
 from dotenv import load_dotenv
 from django.utils.translation import gettext_lazy as _
 
@@ -43,6 +45,7 @@ INSTALLED_APPS = [
     'books',
     'rest_framework',
     'drf_yasg',
+    'rest_framework_simplejwt',
 ]
 
 MIDDLEWARE = [
@@ -152,16 +155,20 @@ LOGOUT_REDIRECT_URL = 'login'
 LOGIN_REDIRECT_URL = 'book_list'
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
+    'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ],
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
 }
+
 
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Bookstore API',
     'DESCRIPTION': 'API for the Bookstore application',
     'VERSION': '1.0.0',
-    'SECURITY': [{'Bearer': []}],  # This line specifies the Bearer token security
+    'SECURITY': [{'Bearer': []}],
     'SECURITY_DEFINITIONS': {
         'Bearer': {
             'type': 'http',
@@ -169,4 +176,18 @@ SPECTACULAR_SETTINGS = {
             'bearerFormat': 'JWT',
         },
     },
+}
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': settings.SECRET_KEY,
+    'VERIFYING_KEY': None,
+    'AUDIENCE': None,
+    'ISSUER': None,
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id',
 }
