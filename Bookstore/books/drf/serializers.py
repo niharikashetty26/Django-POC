@@ -2,7 +2,7 @@ from rest_framework import serializers, viewsets
 from django.contrib.auth.models import User
 from rest_framework.permissions import IsAuthenticated
 
-from .models import Book, Cart, Order, OrderItem, Review, UserProfile
+from books.models import Book, UserProfile, Review, Cart, OrderItem, Order
 
 
 class RegisterSerializer(serializers.ModelSerializer):

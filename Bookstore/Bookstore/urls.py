@@ -6,13 +6,14 @@ from django.conf.urls.i18n import i18n_patterns
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('i18n/', include('django.conf.urls.i18n')),
+    path('i18n/', include('django.conf.urls.i18n')),  # For language switching
+    path('api/', include('books.drf.urls')),  # Include DRF API URLs from the books app
 ]
 
 # Include authentication URLs within i18n_patterns
 urlpatterns += i18n_patterns(
-    path('', include('books.urls')),
-    path('accounts/', include('django.contrib.auth.urls')),
+    path('', include('books.urls')),  # Include your book app URLs
+    path('accounts/', include('django.contrib.auth.urls')),  # Default auth URLs
 )
 
 if settings.DEBUG:

@@ -8,7 +8,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth.models import User
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly
-from .models import Book, Cart, Order, OrderItem, UserProfile
+from books.models import Book, Cart, Order, OrderItem, UserProfile
 from .serializers import RegisterSerializer, BookSerializer, CartSerializer, OrderSerializer
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
