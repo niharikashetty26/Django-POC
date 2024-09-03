@@ -1,5 +1,5 @@
 import uuid
-from django.db.models import Sum
+from django.db.models import Sum, F
 from rest_framework import generics, status, viewsets, permissions
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound, PermissionDenied
@@ -8,6 +8,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth.models import User, Group
 from rest_framework.permissions import AllowAny, IsAuthenticated
+
 from books.models import Book, Cart, Order, OrderItem, UserProfile
 from .serializers import RegisterSerializer, BookSerializer, CartSerializer, OrderSerializer
 
@@ -25,22 +26,32 @@ class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
 
-class IsAdminOrReadOnly(permissions.BasePermission):
+class IsAdmin(permissions.BasePermission):
     def has_permission(self, request, view):
-        if request.method in permissions.SAFE_METHODS:
-            return True
         return request.user.is_authenticated and request.user.userprofile.role in ['admin', 'superadmin']
+
+
+class IsCustomer(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return request.user.is_authenticated and request.user.userprofile.role == 'customer'
 
 
 class IsCustomerOrAdmin(permissions.BasePermission):
     def has_permission(self, request, view):
         if request.method in ['GET', 'POST']:
             return request.user.is_authenticated and (
-                        request.user.userprofile.role == 'customer' or request.user.userprofile.role in ['admin',
-                                                                                                         'superadmin'])
+                request.user.userprofile.role in ['customer', 'admin', 'superadmin']
+            )
         if request.method in ['PUT', 'DELETE']:
             return request.user.is_authenticated and request.user.userprofile.role in ['admin', 'superadmin']
         return False
+
+
+class IsAdminOrReadOnly(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        return request.user.is_authenticated and request.user.userprofile.role in ['admin', 'superadmin']
 
 
 class RegisterView(generics.CreateAPIView):
@@ -85,6 +96,10 @@ class CartViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['post'])
     def add_books(self, request):
+        if not request.user.is_authenticated:
+            return Response({'detail': 'Authentication credentials were not provided.'},
+                            status=status.HTTP_401_UNAUTHORIZED)
+
         user = request.user
         books_data = request.data.get('books', [])
         added_cart_items = []
@@ -120,7 +135,11 @@ class CartViewSet(viewsets.ModelViewSet):
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
-    permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        if self.action in ['create', 'destroy', 'cancel']:
+            return [IsCustomer() | IsAdmin()]
+        return [IsAdminOrReadOnly()]
 
     def create(self, request, *args, **kwargs):
         user = request.user
