@@ -1,16 +1,16 @@
 import uuid
-from django.db.models import Sum, F
+from django.db.models import Sum
 from rest_framework import generics, status, viewsets, permissions
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from django.contrib.auth.models import User, Group
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from django.contrib.auth.models import User
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly
 
-from books.models import Book, Cart, Order, OrderItem, UserProfile
 from .serializers import RegisterSerializer, BookSerializer, CartSerializer, OrderSerializer
+from ..models import UserProfile, Book, Cart, Order, OrderItem
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -24,27 +24,6 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
-
-
-class IsAdmin(permissions.BasePermission):
-    def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.userprofile.role in ['admin', 'superadmin']
-
-
-class IsCustomer(permissions.BasePermission):
-    def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.userprofile.role == 'customer'
-
-
-class IsCustomerOrAdmin(permissions.BasePermission):
-    def has_permission(self, request, view):
-        if request.method in ['GET', 'POST']:
-            return request.user.is_authenticated and (
-                request.user.userprofile.role in ['customer', 'admin', 'superadmin']
-            )
-        if request.method in ['PUT', 'DELETE']:
-            return request.user.is_authenticated and request.user.userprofile.role in ['admin', 'superadmin']
-        return False
 
 
 class IsAdminOrReadOnly(permissions.BasePermission):
@@ -63,14 +42,8 @@ class RegisterView(generics.CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-
-        # Create UserProfile only if it doesn't exist
         if not UserProfile.objects.filter(user=user).exists():
             UserProfile.objects.create(user=user, role='customer')
-
-        # Add the user to the "User" group
-        user_group, created = Group.objects.get_or_create(name='User')
-        user.groups.add(user_group)
 
         return Response({
             "user": {
@@ -92,14 +65,10 @@ class BookViewSet(viewsets.ModelViewSet):
 class CartViewSet(viewsets.ModelViewSet):
     queryset = Cart.objects.all()
     serializer_class = CartSerializer
-    permission_classes = [IsCustomerOrAdmin]
+    permission_classes = [IsAuthenticated]
 
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=['post'], url_path='add_books')
     def add_books(self, request):
-        if not request.user.is_authenticated:
-            return Response({'detail': 'Authentication credentials were not provided.'},
-                            status=status.HTTP_401_UNAUTHORIZED)
-
         user = request.user
         books_data = request.data.get('books', [])
         added_cart_items = []
@@ -135,11 +104,7 @@ class CartViewSet(viewsets.ModelViewSet):
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
-
-    def get_permissions(self):
-        if self.action in ['create', 'destroy', 'cancel']:
-            return [IsCustomer() | IsAdmin()]
-        return [IsAdminOrReadOnly()]
+    permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
         user = request.user
@@ -179,13 +144,13 @@ class OrderViewSet(viewsets.ModelViewSet):
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
-        if request.user.userprofile.role not in ['admin', 'superadmin']:
-            raise PermissionDenied("Only admins can update the status of orders.")
+        if not request.user.is_superuser and not request.user.userprofile.role in ['admin', 'superadmin']:
+            raise PermissionDenied("Only admins or superadmins can update the status of orders.")
         return super().update(request, *args, **kwargs)
 
     def perform_update(self, serializer):
         instance = serializer.save()
-        if instance.status == 'completed':
+        if instance.status == 'completed' or instance.status == 'Completed':
             for item in instance.items.all():
                 item.book.quantity -= item.quantity
                 item.book.save()
