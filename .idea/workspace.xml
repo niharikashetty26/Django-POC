@@ -5,12 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="819f5225-23c5-4198-b476-491b8bd45065" name="Changes" comment="27-Aug">
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_23_08_24,_2_19_pm_[Changes]/shelved.patch" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_23_08_24,_2_25_pm_[Changes]/shelved.patch" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_23_08_24__2_19_pm__Changes_.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_23_08_24__2_25_pm__Changes_.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bookstore/Bookstore/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/Bookstore/Bookstore/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Bookstore/Bookstore/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/Bookstore/Bookstore/settings.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -355,9 +351,9 @@
     <MESSAGE value="DB-changes" />
     <MESSAGE value="Made-changes" />
     <MESSAGE value="23-Aug-2024" />
-    <MESSAGE value="27-Aug" />
     <MESSAGE value="commit" />
-    <option name="LAST_COMMIT_MESSAGE" value="commit" />
+    <MESSAGE value="27-Aug" />
+    <option name="LAST_COMMIT_MESSAGE" value="27-Aug" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
