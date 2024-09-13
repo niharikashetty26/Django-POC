@@ -134,8 +134,8 @@ class OrderViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         if self.action in ['create', 'destroy', 'cancel']:
-            return [IsCustomer() | IsAdmin()]
-        return [IsAdminOrReadOnly()]
+            return [permissions.IsAuthenticated(), IsCustomerOrAdmin()]
+        return [permissions.IsAuthenticated(), IsAdminOrReadOnly()]
 
     def create(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
@@ -149,6 +149,7 @@ class OrderViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     def perform_create(self, serializer):
+        # Pass the user from request to the serializer
         serializer.save(user=self.request.user)
 
     def destroy(self, request, *args, **kwargs):
