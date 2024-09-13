@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orders for {{ user.user.username }}</title>
+    <style>
+        /* Add some styles here */
+    </style>
+</head>
+<body>
+
+<h1>Orders for {{ user.user.username }}</h1>
+
+<table>
+    <tr>
+        <th>Book Title</th>
+        <th>Quantity</th>
+        <th>Total Price</th>
+        <th>Order Date</th>
+    </tr>
+    {% for order in orders %}
+        <tr>
+            <td>{{ order.book.title }}</td>
+            <td>{{ order.quantity }}</td>
+            <td>${{ order.total_price }}</td>
+            <td>{{ order.order_date }}</td>
+        </tr>
+    {% empty %}
+        <tr>
+            <td colspan="4">No orders found for this user.</td>
+        </tr>
+    {% endfor %}
+</table>
+
+<a href="{% url 'admin_dashboard' %}">Back to Admin Dashboard</a>
+
+</body>
+</html>

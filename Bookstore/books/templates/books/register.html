@@ -1,0 +1,43 @@
+{% extends 'books/base_template_user.html' %}
+{% load static i18n custom_filters %}
+
+{% block title %}Register{% endblock %}
+
+{% block content %}
+  <div class="container mt-5">
+    <h2>{% trans "Register" %}</h2>
+
+    <form method="post" class="form-signin">
+      {% csrf_token %}
+
+      {% if messages %}
+        <div class="alert alert-info">
+          {% for message in messages %}
+            <p>{{ message }}</p>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <div class="form-group">
+        <label for="username">{% trans "Username" %}</label>
+        {{ form.username|add_class:"form-control" }}
+      </div>
+
+      <div class="form-group">
+        <label for="password1">{% trans "Password" %}</label>
+        {{ form.password1|add_class:"form-control" }}
+      </div>
+
+      <div class="form-group">
+        <label for="password2">{% trans "Confirm Password" %}</label>
+        {{ form.password2|add_class:"form-control" }}
+      </div>
+
+      <button type="submit" class="btn btn-primary">{% trans "Register" %}</button>
+
+      <p class="mt-3">
+        {% trans "Already have an account?" %} <a href="{% url 'login' %}">{% trans "Login here" %}</a>
+      </p>
+    </form>
+  </div>
+{% endblock %}

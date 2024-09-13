@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "Order Success" %}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center">{% trans "Order Confirmation" %}</h1>
+    <p class="text-center">{% trans "Your order has been placed successfully!" %}</p>
+    <p class="text-center">{% trans "Thank you for shopping with us!" %}</p>
+    <div class="text-center">
+        <a href="{% url 'book_list' %}" class="btn btn-primary">{% trans "Continue Shopping" %}</a>
+    </div>
+</div>
+{% endblock %}

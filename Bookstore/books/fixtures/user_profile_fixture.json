@@ -1,0 +1,42 @@
+[
+{
+    "model": "books.userprofile",
+    "pk": 1,
+    "fields": {
+        "user": 2,
+        "role": "superadmin"
+    }
+},
+{
+    "model": "books.userprofile",
+    "pk": 2,
+    "fields": {
+        "user": 3,
+        "role": "customer"
+    }
+},
+{
+    "model": "books.userprofile",
+    "pk": 3,
+    "fields": {
+        "user": 4,
+        "role": "customer"
+    }
+},
+{
+    "model": "books.userprofile",
+    "pk": 4,
+    "fields": {
+        "user": 5,
+        "role": "admin"
+    }
+},
+{
+    "model": "books.userprofile",
+    "pk": 5,
+    "fields": {
+        "user": 6,
+        "role": "admin"
+    }
+}
+]

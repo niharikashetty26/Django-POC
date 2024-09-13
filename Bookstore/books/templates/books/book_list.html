@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Book List" %}{% endblock %}
+
+{% block content %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+    .card {
+        transition: transform 0.2s; /* Animation */
+    }
+
+    .card:hover {
+        transform: scale(1.05); /* Zoom effect */
+    }
+
+    /* Custom styles to reduce filter box size */
+    .filter-input {
+        width: 150px; /* Set the width you prefer */
+    }
+</style>
+
+<div class="container mt-4">
+    <h2 class="text-center mb-4">{% trans "Book List" %}</h2>
+
+    {% if user.is_authenticated %}
+        {% if user.is_superuser or user.userprofile.role == 'admin' %}
+            <a href="{% url 'book_create' %}" class="btn btn-success mb-3">{% trans "Add a New Book" %}</a>
+        {% endif %}
+    {% endif %}
+
+    <form method="GET" class="mb-4">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <input type="number" name="price_min" class="form-control filter-input"
+                       placeholder="{% trans 'Min Price' %}" value="{{ request.GET.price_min }}">
+            </div>
+            <div class="col-md-3">
+                <input type="number" name="price_max" class="form-control filter-input"
+                       placeholder="{% trans 'Max Price' %}" value="{{ request.GET.price_max }}">
+            </div>
+            <div class="col-md-3">
+                <select name="genre" class="form-select filter-input">
+                    <option value="">{% trans 'All Genres' %}</option>
+                    <option value="Fiction" {% if request.GET.genre == 'Fiction' %}selected{% endif %}>{% trans 'Fiction' %}</option>
+                    <option value="Non-Fiction" {% if request.GET.genre == 'Non-Fiction' %}selected{% endif %}>{% trans 'Non-Fiction' %}</option>
+                    <option value="Self-help" {% if request.GET.genre == 'Self-help' %}selected{% endif %}>{% trans 'Self-help' %}</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100">{% trans "Filter" %}</button>
+            </div>
+        </div>
+    </form>
+
+    <div class="row">
+        {% for book in books %}
+        <div class="col-md-3 mb-4">
+            <div class="card">
+                {% if book.cover_image %}
+                <img src="{{ book.cover_image.url }}" class="card-img-top" alt="{{ book.title }} Cover"
+                     style="height: 200px; object-fit: cover;">
+                {% else %}
+                <img src="https://via.placeholder.com/200" class="card-img-top" alt="Placeholder">
+                {% endif %}
+                <div class="card-body">
+                    <a href="{% url 'book_detail' book.pk %}" class="text-decoration-none text-dark">
+                        <h5 class="card-title">{{ book.title }}</h5>
+                    </a>
+                    <p class="card-text">{% trans "Author" %}: {{ book.author }}</p>
+                    <p class="card-text">{% trans "Genre" %}: {{ book.genre }}</p>
+                    {% if book.quantity > 0 %}
+                        <p class="card-text">{% trans "Price" %}: ${{ book.price }}</p>
+                        <a href="{% url 'add_to_cart' book.pk %}" class="btn btn-primary">{% trans "Add to Cart" %}</a>
+                    {% else %}
+                        <p class="text-danger">{% trans "Sold Out" %}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-md-12">
+            <div class="alert alert-warning text-center" role="alert">
+                {% trans "No books available." %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}

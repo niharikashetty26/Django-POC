@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="container">
+    <h2>{{ book.title }}</h2>
+    <p><strong>Author:</strong> {{ book.author }}</p>
+    <p><strong>Genre:</strong> {{ book.genre }}</p>
+    <p><strong>Price:</strong> ${{ book.price }}</p>
+    <p><strong>Description:</strong> {{ book.description }}</p>
+    <p><strong>Quantity:</strong> {{ book.quantity }}</p>
+
+    {% if book.cover_image %}
+    <img src="{{ book.cover_image.url }}" alt="{{ book.title }} Cover" class="book-cover-image">
+    {% endif %}
+
+    <div class="review-section">
+        <h3>Submit a Review</h3>
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="rating" class="form-label">Rating:</label>
+                <div id="rating" class="stars">
+                    <span class="fa fa-star unchecked" data-value="1" onclick="setRating(1)"></span>
+                    <span class="fa fa-star unchecked" data-value="2" onclick="setRating(2)"></span>
+                    <span class="fa fa-star unchecked" data-value="3" onclick="setRating(3)"></span>
+                    <span class="fa fa-star unchecked" data-value="4" onclick="setRating(4)"></span>
+                    <span class="fa fa-star unchecked" data-value="5" onclick="setRating(5)"></span>
+                </div>
+                <input type="hidden" name="rating" id="rating-input" value=""/>
+            </div>
+            <div class="mb-3">
+                <label for="comment" class="form-label">Your Review:</label>
+                <textarea name="comment" id="comment" class="form-control" placeholder="Write your review here"
+                          required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary mt-2">Submit Review</button>
+        </form>
+    </div>
+
+    <h3>User Reviews</h3>
+    {% if reviews %}
+    <div class="reviews">
+        {% for review in reviews %}
+        <div class="review">
+            <strong>{{ review.user.username }}</strong>
+            <div class="stars">
+                {% for i in "12345" %}
+                {% if i|add:0 <= review.rating %}
+                <span class="fa fa-star checked"></span>
+                {% else %}
+                <span class="fa fa-star"></span>
+                {% endif %}
+                {% endfor %}
+            </div>
+            <p>{{ review.comment }}</p>
+        </div>
+        <hr>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p>No reviews yet.</p>
+    {% endif %}
+
+    {% if user.is_authenticated %}
+    {% if user.is_superuser or user.userprofile.role == 'admin' %}
+    <a href="{% url 'book_update' book.pk %}" class="btn btn-primary mt-3">Edit Book</a>
+    <form method="POST" action="{% url 'delete_book' book.pk %}" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary mt-3"
+                onclick="return confirm('Are you sure you want to delete this book?');">Delete Book
+        </button>
+    </form>
+    {% endif %}
+    {% endif %}
+</div>
+
+<!-- Font Awesome Icon Library -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<!-- Link to External CSS File -->
+<link rel="stylesheet" href="{% static 'css/book_detail.css' %}">
+
+<script>
+    function setRating(rating) {
+        document.getElementById('rating-input').value = rating;
+        var stars = document.querySelectorAll('#rating .fa');
+        stars.forEach((star, index) => {
+            if (index < rating) {
+                star.classList.add('checked');
+                star.classList.remove('unchecked');
+            } else {
+                star.classList.add('unchecked');
+                star.classList.remove('checked');
+            }
+        });
+    }
+
+    // Initialize star ratings based on any existing rating value
+    document.addEventListener('DOMContentLoaded', function() {
+        var initialRating = document.getElementById('rating-input').value;
+        if (initialRating) {
+            setRating(parseInt(initialRating, 10));
+        }
+    });
+</script>
+{% endblock %}

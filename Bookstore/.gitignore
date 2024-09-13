@@ -1,0 +1,23 @@
+.idea/
+*.pyc
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+Bookstore/__pycache__/
+
+.idea/
+.vscode/
+/TABLES
+
+#envoiment variable
+.env
+
+#virtual
+venv/
+
+
+media/
+*.pyc
+__pycache__/

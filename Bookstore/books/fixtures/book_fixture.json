@@ -1,0 +1,54 @@
+[
+{
+    "model": "books.book",
+    "pk": 1,
+    "fields": {
+        "title": "The Diary of Young Girl",
+        "author": "Anne Frank",
+        "price": "400.00",
+        "cover_image": "covers/The-Diary-of-a-Young-Girl-by-Anne-Frank__-best-non-fiction-books-of-all-time_U97q9qz.png",
+        "description": "The Diary of Young Girl",
+        "genre": "Non-Fiction",
+        "quantity": 0
+    }
+},
+{
+    "model": "books.book",
+    "pk": 2,
+    "fields": {
+        "title": "Novel-Shakesphear",
+        "author": "Shakespear",
+        "price": "500.00",
+        "cover_image": "covers/William_Shakespeare_-_First_Folio_1623_AFaj44v.jpg",
+        "description": "Novel-Shakesphear",
+        "genre": "Non-Fiction",
+        "quantity": 2
+    }
+},
+{
+    "model": "books.book",
+    "pk": 3,
+    "fields": {
+        "title": "Just Stories",
+        "author": "AAA",
+        "price": "900.00",
+        "cover_image": "covers/71VJlk2oBSL._AC_UF10001000_QL80__LgR7Jcm.jpg",
+        "description": "Just Stories",
+        "genre": "200",
+        "quantity": 6
+    }
+},
+{
+    "model": "books.book",
+    "pk": 4,
+    "fields": {
+        "title": "In the shade of Olive",
+        "author": "PPP",
+        "price": "300.00",
+        "cover_image": "covers/download_TXJJFBh.jpeg",
+        "description": "In the shade of Olive",
+        "genre": "Fiction",
+        "quantity": 4
+    }
+}
+]

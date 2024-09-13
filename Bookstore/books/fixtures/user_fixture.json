@@ -1,0 +1,96 @@
+[
+{
+    "model": "auth.user",
+    "pk": 2,
+    "fields": {
+        "password": "pbkdf2_sha256$600000$ZaPPTBhw0cYJIXju0cVJZj$4CAGxtd+KKBa1fheEIJpLgP4KG+qAUN9+2QsuSzcceY=",
+        "last_login": "2024-08-23T06:42:41.781Z",
+        "is_superuser": true,
+        "username": "NiharikaShetty",
+        "first_name": "",
+        "last_name": "",
+        "email": "niharika.shetty@successive.tech",
+        "is_staff": true,
+        "is_active": true,
+        "date_joined": "2024-08-23T06:30:13.444Z",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "auth.user",
+    "pk": 3,
+    "fields": {
+        "password": "pbkdf2_sha256$600000$LLVpPIEtxGu1YIKv1oIBsy$cUX0CjibHmnKHzf8lsmJ4E6UbjSLb32A5gpA8Iaj4S0=",
+        "last_login": "2024-08-23T06:37:01.268Z",
+        "is_superuser": false,
+        "username": "tejaschapke",
+        "first_name": "",
+        "last_name": "",
+        "email": "",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2024-08-23T06:36:52.426Z",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "auth.user",
+    "pk": 4,
+    "fields": {
+        "password": "pbkdf2_sha256$600000$1JIfgbw9lm8zDf1i0fDDJH$BxFAPenywdA8lIUp2jTYP3/kbN7G0Toi6J5KsBj7k1Y=",
+        "last_login": "2024-08-23T06:37:41.340Z",
+        "is_superuser": false,
+        "username": "umesh",
+        "first_name": "",
+        "last_name": "",
+        "email": "",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2024-08-23T06:37:31.824Z",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "auth.user",
+    "pk": 5,
+    "fields": {
+        "password": "pbkdf2_sha256$600000$jQunb3JWhfyFeI0u4jOX5K$Gwm//YOj4Vvm96ZmPYUs+RS1abYRtGL986/e7fWGvEg=",
+        "last_login": "2024-08-23T06:42:18Z",
+        "is_superuser": false,
+        "username": "admin",
+        "first_name": "",
+        "last_name": "",
+        "email": "",
+        "is_staff": true,
+        "is_active": true,
+        "date_joined": "2024-08-23T06:38:51Z",
+        "groups": [
+            1
+        ],
+        "user_permissions": []
+    }
+},
+{
+    "model": "auth.user",
+    "pk": 6,
+    "fields": {
+        "password": "pbkdf2_sha256$600000$BEssP3Jo2MwUQiu51zDvDc$+hAqBbdAxfip5KzqBiOPQZntgycliObaWEjgByEbrSo=",
+        "last_login": null,
+        "is_superuser": false,
+        "username": "Nikki",
+        "first_name": "",
+        "last_name": "",
+        "email": "",
+        "is_staff": true,
+        "is_active": true,
+        "date_joined": "2024-08-23T06:52:25Z",
+        "groups": [
+            1
+        ],
+        "user_permissions": []
+    }
+}
+]

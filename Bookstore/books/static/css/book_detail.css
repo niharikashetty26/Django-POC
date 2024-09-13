@@ -1,0 +1,26 @@
+.checked {
+    color: orange;
+}
+.unchecked {
+    color: #ccc;
+}
+.stars {
+    display: inline-block;
+    cursor: pointer;
+}
+.fa-star {
+    font-size: 24px;
+}
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+.btn-primary:hover {
+    background-color: #0056b3;
+    border-color: #004085;
+}
+.book-cover-image {
+    max-width: 200px; /* Adjust to match the list page styling */
+    height: auto;
+    border-radius: 8px; /* Optional: add rounded corners */
+}
