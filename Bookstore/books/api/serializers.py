@@ -43,7 +43,7 @@ class BookSerializer(serializers.ModelSerializer):
 
 class ReviewSerializer(serializers.ModelSerializer):
     user = serializers.StringRelatedField(read_only=True)
-    book = serializers.PrimaryKeyRelatedField(queryset=Book.objects.all())
+    book = serializers.PrimaryKeyRelatedField(queryset=Book.objects.all())  # Book ID only
 
     class Meta:
         model = Review
@@ -90,35 +90,44 @@ class AddMultipleBooksToCartSerializer(serializers.Serializer):
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
-    book = BookSerializer(read_only=True)
-
     class Meta:
         model = OrderItem
-        fields = ['id', 'book', 'quantity']
+        fields = ['book', 'quantity']
 
+    def validate_book(self, value):
+        if not Book.objects.filter(id=value.id).exists():
+            raise serializers.ValidationError(f"Book with id {value.id} does not exist.")
+        return value
 
 class OrderSerializer(serializers.ModelSerializer):
-    items = OrderItemSerializer(many=True, read_only=True)
+    items = OrderItemSerializer(many=True)
     total_price = serializers.SerializerMethodField()
 
     class Meta:
         model = Order
-        fields = ['id', 'user', 'status', 'order_date', 'total_price', 'items']  # Ensure 'status' is included
+        fields = ['id', 'status', 'order_date', 'total_price', 'items']
 
     def get_total_price(self, obj):
         return sum(item.book.price * item.quantity for item in obj.items.all())
 
+    def create(self, validated_data):
+        items_data = validated_data.pop('items')
+        user = self.context['request'].user
+        order = Order.objects.create(user=user, **validated_data)
+        for item_data in items_data:
+            OrderItem.objects.create(order=order, **item_data)
+        return order
 
-class ReviewViewSet(viewsets.ModelViewSet):
-    serializer_class = ReviewSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        queryset = Review.objects.all()
-        book_id = self.request.query_params.get('book_id')
-        if book_id is not None:
-            queryset = queryset.filter(book_id=book_id)
-        return queryset
-
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+# class ReviewViewSet(viewsets.ModelViewSet):
+#     serializer_class = ReviewSerializer
+#     permission_classes = [IsAuthenticated]
+#
+#     def get_queryset(self):
+#         queryset = Review.objects.all()
+#         book_id = self.request.query_params.get('book_id')
+#         if book_id is not None:
+#             queryset = queryset.filter(book_id=book_id)
+#         return queryset
+#
+#     def perform_create(self, serializer):
+#         serializer.save(user=self.request.user)

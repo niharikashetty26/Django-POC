@@ -1,16 +1,16 @@
 import uuid
-from django.db.models import Sum
+from django.db.models import Sum, F
 from rest_framework import generics, status, viewsets, permissions
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from django.contrib.auth.models import User
-from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly
+from django.contrib.auth.models import User, Group
+from rest_framework.permissions import AllowAny, IsAuthenticated
 
+from books.models import Book, Cart, Order, OrderItem, UserProfile
 from .serializers import RegisterSerializer, BookSerializer, CartSerializer, OrderSerializer
-from ..models import UserProfile, Book, Cart, Order, OrderItem
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -24,6 +24,27 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
+
+
+class IsAdmin(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return request.user.is_authenticated and request.user.userprofile.role in ['admin', 'superadmin']
+
+
+class IsCustomer(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return request.user.is_authenticated and request.user.userprofile.role == 'customer'
+
+
+class IsCustomerOrAdmin(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if request.method in ['GET', 'POST']:
+            return request.user.is_authenticated and (
+                request.user.userprofile.role in ['customer', 'admin', 'superadmin']
+            )
+        if request.method in ['PUT', 'DELETE']:
+            return request.user.is_authenticated and request.user.userprofile.role in ['admin', 'superadmin']
+        return False
 
 
 class IsAdminOrReadOnly(permissions.BasePermission):
@@ -44,6 +65,8 @@ class RegisterView(generics.CreateAPIView):
         user = serializer.save()
         if not UserProfile.objects.filter(user=user).exists():
             UserProfile.objects.create(user=user, role='customer')
+        user_group, created = Group.objects.get_or_create(name='Customer')
+        user.groups.add(user_group)
 
         return Response({
             "user": {
@@ -65,10 +88,14 @@ class BookViewSet(viewsets.ModelViewSet):
 class CartViewSet(viewsets.ModelViewSet):
     queryset = Cart.objects.all()
     serializer_class = CartSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsCustomerOrAdmin]
 
-    @action(detail=False, methods=['post'], url_path='add_books')
+    @action(detail=False, methods=['post'])
     def add_books(self, request):
+        if not request.user.is_authenticated:
+            return Response({'detail': 'Authentication credentials were not provided.'},
+                            status=status.HTTP_401_UNAUTHORIZED)
+
         user = request.user
         books_data = request.data.get('books', [])
         added_cart_items = []
@@ -104,25 +131,25 @@ class CartViewSet(viewsets.ModelViewSet):
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
-    permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        if self.action in ['create', 'destroy', 'cancel']:
+            return [IsCustomer() | IsAdmin()]
+        return [IsAdminOrReadOnly()]
 
     def create(self, request, *args, **kwargs):
-        user = request.user
-        if not user.is_authenticated:
+        if not request.user.is_authenticated:
             return Response({'detail': 'Authentication credentials were not provided.'},
                             status=status.HTTP_401_UNAUTHORIZED)
 
-        cart_items = Cart.objects.filter(user=user)
-        if not cart_items:
-            return Response({'detail': 'Cart is empty.'}, status=status.HTTP_400_BAD_REQUEST)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
-        order = Order.objects.create(user=user, status='pending')
-        for item in cart_items:
-            OrderItem.objects.create(order=order, book=item.book, quantity=item.quantity)
-        cart_items.delete()
-
-        serializer = self.get_serializer(order)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
     def destroy(self, request, *args, **kwargs):
         order = self.get_object()
@@ -144,13 +171,13 @@ class OrderViewSet(viewsets.ModelViewSet):
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
-        if not request.user.is_superuser and not request.user.userprofile.role in ['admin', 'superadmin']:
-            raise PermissionDenied("Only admins or superadmins can update the status of orders.")
+        if request.user.userprofile.role not in ['admin', 'superadmin']:
+            raise PermissionDenied("Only admins can update the status of orders.")
         return super().update(request, *args, **kwargs)
 
     def perform_update(self, serializer):
         instance = serializer.save()
-        if instance.status == 'completed' or instance.status == 'Completed':
+        if instance.status == 'completed':
             for item in instance.items.all():
                 item.book.quantity -= item.quantity
                 item.book.save()

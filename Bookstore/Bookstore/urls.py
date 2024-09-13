@@ -22,8 +22,8 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('books.urls')),  # Includes the frontend URLs from books/urls.py
-    path('api/', include('books.api.urls')),  # Includes the API URLs
+    path('', include('books.urls')),
+    path('api/', include('books.api.urls')),
     re_path(r'^api/swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     path('api/swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('api/redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
